@@ -1,1 +1,1 @@
-# SARS_CoV_2_water_surveillance
+# SARS_CoV_2_wastewater_surveillance
