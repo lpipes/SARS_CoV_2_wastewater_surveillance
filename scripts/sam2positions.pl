@@ -3,7 +3,7 @@ use strict;
 use warnings;
 if (scalar(@ARGV) < 2){
 	print "usage:\n";
-	print "sam2positions.pl MSA.fasta alignment.sam\n";
+	print "sam2positions.pl MSA.fasta.gz alignment.sam\n";
 	print "outputs: output.txt\n";
 	exit;
 }
@@ -15,7 +15,7 @@ my %chrom_sizes = ();
 $chrom_sizes{"NC_045512v2"}=29903;
 my $ref_seq=0;
 my %reference_map;
-open(MSA,$msa_file) || die("cannot open $msa_file!");
+open(MSA,"gunzip -c $msa_file |") || die("cannot open pipe to $msa_file!");
 while(<MSA>){
 	my $line = $_;
 	chomp($line);
