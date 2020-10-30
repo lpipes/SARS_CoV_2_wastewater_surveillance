@@ -10,7 +10,7 @@ if (scalar(@ARGV) < 2){
 my $msa_file = $ARGV[0];
 my $sam_file = $ARGV[1];
 my @splitname = split(/\./,$sam_file);
-my $outfile = 'output2.txt';
+my $outfile = 'output.txt';
 my %chrom_sizes = ();
 $chrom_sizes{"NC_045512v2"}=29903;
 my $ref_seq=0;
