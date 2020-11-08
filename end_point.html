@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Web Login</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+  </head>
+  <body>
+    <div class="limiter">
+      <div class="container">
+        <div class="wrap">
+			<div class="pic" data-tilt>
+				<img src="static/title.png" alt="IMG" />
+			</div>
+          <form class="login-form">
+            <span class="end-title"><i class="fa fa-bullhorn"></i> Thanks!</span>
+
+            <div>
+                <span class="end">You have successfully logged into your account!</span>
+                <span class="end">Project for Waste Water Surveillance
+				</span>
+            </div>
+
+            <div class="text-center">
+              <a class="register" href="/">Try to login with another account<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i></a>
+            </div>
+		
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
