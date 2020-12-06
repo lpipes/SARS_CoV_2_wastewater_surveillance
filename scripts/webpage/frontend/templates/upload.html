@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Upload</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+
+
+    <title>Upload Your Sequences</title>
+
+    <script type="text/javascript">
+
+        function UpladFile() {
+
+            var fileObj = document.getElementById("file").files[0]; // get file object
+
+            var api = "http://127.0.0.1:5000/";                    // backend address
+
+            // FormData object
+
+            var form = new FormData();
+
+            form.append("file", fileObj);                           // file object
+
+            // XMLHttpRequest 
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("post", api, true);
+
+            xhr.onload = function () {
+
+                alert("Success!");
+
+            };
+
+            xhr.send(form);
+
+        }
+
+</script>
+
+</head>
+
+<body>
+<div class="limiter">
+      <div class="container">
+        <div class="wrap">
+			<div class="container-login-btn">
+				<span class="form-title">Upload Now(.txt/.fasta only)</span>
+				<input type="file" id="file" name="myfile" />
+				<br></br>
+				<input class="login-form-btn" type="button" onclick="UpladFile()" value="SUBMIT" action="/"/>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

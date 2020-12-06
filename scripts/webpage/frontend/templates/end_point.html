@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Web Login</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+  </head>
+  <script type="text/javascript">
 
+        function UpladFile() {
+
+            var fileObj = document.getElementById("file").files[0]; // 获取文件对象
+
+            var api = "http://127.0.0.1:5000/uploadfiles/";                    // 接收上传文件的后台地址
+
+            // FormData 对象
+
+            var form = new FormData();
+
+            form.append("file", fileObj);                           // 文件对象
+
+            // XMLHttpRequest 对象
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("post", api, true);
+
+            xhr.onload = function () {
+
+                alert("Finished!");
+
+            };
+
+            xhr.send(form);
+
+        }
+	</script>
+  <body>
+    <div class="limiter">
+      <div class="container">
+        <div class="wrap">
+			<div class="login-form">
+				<span class="end-title"><i class="fa fa-bullhorn"></i> Thanks!</span>
+				<div>
+					<span class="end">You have successfully logged into your account!</span>
+					<span class="end"><b>SARS_COV2_WasteWater_Surveillance</b></span>
+				</div>
+				<div class="text-center">
+					<a class="register" href="/">Try to login with another account<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i></a>
+				</div>
+			
+				<form id="upload" class="login-form" action='/get_email' method="post" >
+					<label>Please enter your e-mail address: </label>
+					<br></br>
+					<div class="wrap-input validate-input">
+						<input class="input" type="text" name="email" placeholder="E-mail"/>
+						<span class="focus-input"></span>
+						<span class="symbol-input"><i class="fa fa-user" aria-hidden="true"></i></span>
+					</div>
+				
+					<div class="container-login-btn" >
+						<button class="login-form-btn">UPLOAD YOUR SEQUENCE</button>
+					</div>
+					
+				</form>	
+			</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
