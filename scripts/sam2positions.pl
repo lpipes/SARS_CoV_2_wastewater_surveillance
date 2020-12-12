@@ -10,12 +10,16 @@ if (scalar(@ARGV) < 2){
 my $msa_file = $ARGV[0];
 my $sam_file = $ARGV[1];
 my @splitname = split(/\./,$sam_file);
-my $outfile = 'output.txt';
+my $outfile = 'output2.txt';
 my %chrom_sizes = ();
 $chrom_sizes{"NC_045512v2"}=29903;
 my $ref_seq=0;
 my %reference_map;
-open(MSA,"gunzip -c $msa_file |") || die("cannot open pipe to $msa_file!");
+if ( $msa_file =~ /\.gz$/ ){
+	open(MSA,"gunzip -c $msa_file |") || die("cannot open pipe to $msa_file!");
+}else{
+	open(MSA,$msa_file) || die("cannot open file!");
+}
 while(<MSA>){
 	my $line = $_;
 	chomp($line);
@@ -156,7 +160,7 @@ while (<SAM>){
 			for(my $i=0; $i<scalar(@spl2); $i++){
 				$tAlignment = $tAlignment + $spl2[$i];
 			}
-			my $tEnd = $tStart + $tAlignment - 2;
+			my $tEnd = $tStart + $tAlignment;
 			my @positions;
 			for(my $i=$tStart; $i<$tEnd; $i++){
 				push(@positions,$reference_map{$i});

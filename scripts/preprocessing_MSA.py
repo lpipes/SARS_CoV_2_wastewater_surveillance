@@ -47,6 +47,6 @@ with open(preprocessing_path, "w+") as fo:
 				same_indices.remove(s)
 		fo.write(id + ",".join(sim))
 
-preprocessing_path = "wuhan_similarities_MSA"
+preprocessing_path = "wuhan_similarities_MSA.txt"
 with open(preprocessing_path, "w+") as fo:
 	fo.write(",".join(same_indices))

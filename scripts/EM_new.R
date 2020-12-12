@@ -1,80 +1,37 @@
 library(Matrix);library(plyr); library(data.table); library(dplyr); library(stringr); 
-library(turboEM); library(hash); 
+library(turboEM); library(hash); library(feather); library(glue); library(arrow); 
 setwd('~/')
 
+#create matrix of alignments' lengths and matrix of numbers of differences
+# dfN = cbind(df_align[,c(1,5)], n=c(nd_mtx[,1]))
+# dfD = cbind(df_align[,c(1,5)], d=c(nd_mtx[,2]))
 
-args <- commandArgs(trailingOnly = TRUE)
-
-case_num = "sample" #<- as.numeric(strsplit(grep('--case*', args, value = TRUE), split = '=')[[1]][[2]])
-output_file = "output.txt" #<- toString(strsplit(grep('--output_file*', args, value = TRUE), split = '=')[[1]][[2]])
-msa_file = "reference_virus_MSA.fasta" #<- toString(strsplit(grep('--msa_file*', args, value = TRUE), split = '=')[[1]][[2]])
-
-syspath = "/Users/selina/Desktop/sars-Cov-2/Viral-Strains/" #/space/s1/selina/
-
-cat("case ", case_num)
-cat("output file ", file)
-cat("msa file ", msa_file)
-
-#--------------------------load viral strains---------------------------------
-#fname = '10_strains.fasta'
-ptm <- proc.time() 
-fname = paste(syspath, msa_file, sep="") 
-tmp = readLines(fname)
-strains = tmp[seq(2,length(tmp),2)] #viral strains
-names(strains) = tmp[seq(1,length(tmp),2)] ## set names
-names(strains) = gsub(pattern = ">", replacement = "", names(strains)) ## fix names
-
-
-cat("\nLoad in sequences:", proc.time() - ptm)
+# ##A ‘wide’ longitudinal dataset will have one record for each individual with some time-constant variables that occupy single columns and some time-varying variables that occupy a column for each time point. 
+# ##for ex: reads have multiple duplicates, so then reshape will place duplicates into the same row and exand the columns; for SID, only the first one will be taken
+# ## row = reads are unique as id var  and col = SID changes per read 
 ptm = proc.time()
-alignments_file = "sample.sam" #paste('alignments_case_', case_num, '.sam', sep="")
-fname=paste(syspath, alignments_file, sep="") 
+syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/" #Viral-Strains/" #/space/s1/selina/
 
-csv_alignments = read.csv(fname, sep='\t', skip=0, header=F)
+dfD_path = glue("{syspath}dfD.feather")
+dfN_path = glue("{syspath}dfN.feather")
+SID_path = glue("{syspath}SID.feather")
 
-df_align = setNames(csv_alignments, c('Type','SN','LN'))
-df_align_pg = subset(df_align, Type=='@PG')
-SN = sapply(df_align$SN[df_align$Type=='@SQ'], function(s) strsplit(toString(s),":")[[1]][2], USE.NAMES=F) # sequence names
-names(SN) = 1:length(SN)
-SID = setNames(1:length(SN), SN)
-nSkip = sum(grepl("@", df_align$Type))
-
-
-cat("\nLoad in alignments:", proc.time() - ptm)
+print(dfD_path)
+dfD = arrow::read_feather(dfD_path)
+print(dfN_path)
+dfN = arrow::read_feather(dfN_path)
+print(SID_path)
+SID = arrow::read_feather(SID_path)
+cat("\nRead in files", proc.time() - ptm)
 ptm = proc.time()
-df_align = setNames(read.csv(fname, sep='\t', skip=nSkip#length(SN)+length(df_align_pg) 
-			     +2, header=F), c('read','SN','LN'))
-df_align = setNames(df_align[,c(1,3,4,6,10)], c('read','SN','pos','cigar','seq'))
-df_align$SID = unname(SID[df_align$SN])
-df_align$SN = NULL
+# dfN = reshape(dfN, direction = "wide", idvar = "read", timevar = "SID")
+# dfD = reshape(dfD, direction = "wide", idvar = "read", timevar = "SID")
 
-cat("\nSet names of alignments:", proc.time() - ptm)
-ptm = proc.time()
-#-------------------------- create matrix Q (Pr(read_i | read_i from strain_j))----
-#calculate the alignment length as a sum of numbers in CIGAR field
-#and the number of differences as the sum of numbers before character "X" in CIGAR field
-isEmpty <- function(a) {
-  return(length(a)==0)
-}
-
-n = unname(sapply(df_align$cigar, function(a) sum(as.numeric(str_extract_all(a, "[0-9]+")[[1]]))))
-
-d = unname(sapply(df_align$cigar, function(a) {
-  x = str_extract_all(a, "[^0-9]+")[[1]]
-  y = as.numeric(str_extract_all(a, "[0-9]+")[[1]])
-  if (!isEmpty(y) && !isEmpty(x)) {
-    v = setNames(as.numeric(str_extract_all(a, "[0-9]+")[[1]]), str_extract_all(a, "[^0-9]+")[[1]])
-    sum(v[names(v)=='X'])
-  }
-}))
-nd_mtx = cbind(n=n,d=d)
-dfN = cbind(df_align[,c(1,5)], n=c(nd_mtx[,1]))
-dfD = cbind(df_align[,c(1,5)], d=c(nd_mtx[,2]))
-print("dfD")
-dfN = reshape(dfN, direction = "wide", idvar = "read", timevar = "SID")
-dfD = reshape(dfD, direction = "wide", idvar = "read", timevar = "SID")
+##replace column names to remove the d.
 colnames(dfN)[2:ncol(dfN)] = substring(colnames(dfN)[2:ncol(dfN)], 3)
 colnames(dfD)[2:ncol(dfD)] = substring(colnames(dfD)[2:ncol(dfD)], 3)
+
+## get the total number of na values 
 sum(is.na(dfN))
 sum(is.na(dfD))
 
