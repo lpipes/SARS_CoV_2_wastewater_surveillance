@@ -6,7 +6,7 @@ dfD_path = "test_input/dfD.feather"
 dfN_path = "test_input/dfN.feather"
 SID_path = "test_input/SID.feather"
 
-output_reads_filepath = "test_input/test_input/output_revised.txt" # sys.argv[1]
+output_reads_filepath = "test_input/output_revised.txt" # sys.argv[1]
 
 t0 = time.time()
 output_mismatch_table = pd.read_csv(output_reads_filepath, sep="\t", header=0)
@@ -28,7 +28,7 @@ reads_col = output_mismatch_table["read"]
 
 # output_mismatch_table = output_mismatch_table.rename(columns={x:y for x,y in zip(output_mismatch_table.columns,range(0, n + 1))})
 ## dfN
-dfN_col = output_mismatch_table[1]
+dfN_col = output_mismatch_table["blockSize"]
 dfN_col = pd.DataFrame(data=dfN_col)
 dfN = pd.concat([reads_col, pd.concat([dfN_col] * (n+1), axis=1, ignore_index=True)], axis=1)
 
