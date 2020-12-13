@@ -6,7 +6,7 @@ dfD_path = "test_input/dfD.feather"
 dfN_path = "test_input/dfN.feather"
 SID_path = "test_input/SID.feather"
 
-output_reads_filepath = "/Users/selina/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/output_revised.txt" # sys.argv[1]
+output_reads_filepath = "test_input/test_input/output_revised.txt" # sys.argv[1]
 
 t0 = time.time()
 output_mismatch_table = pd.read_csv(output_reads_filepath, sep="\t", header=0)
@@ -16,10 +16,10 @@ print("Read in output mismatch reads", readin_time)
 # Get names of strains
 SID = pd.DataFrame(data=list(output_mismatch_table.columns[2:]))
 SID = SID.rename(columns = {0 : "SID"})
-ft.write_dataframe(SID, SID_path)
+ft.write_dataframe(SID, SID_path, compression='uncompressed')
 
 # Rename labels for names of strains 
-n = len(output_mismatch_table.columns) - 2
+n = len(output_mismatch_table.columns) - 1
 
 col_names = ["read", "blockSize"]
 col_names.extend(np.arange(n - 1))
@@ -32,10 +32,10 @@ dfN_col = output_mismatch_table[1]
 dfN_col = pd.DataFrame(data=dfN_col)
 dfN = pd.concat([reads_col, pd.concat([dfN_col] * (n+1), axis=1, ignore_index=True)], axis=1)
 
-ft.write_dataframe(dfN, dfN_path)
+ft.write_dataframe(dfN, dfN_path, compression='uncompressed')
 print("dfN: ", dfN)
 
 ## dfD
 dfD = pd.concat([reads_col,output_mismatch_table.iloc[:,2:n+1]],axis = 1)
-ft.write_dataframe(dfD, dfD_path)
+ft.write_dataframe(dfD, dfD_path, compression='uncompressed')
 print("dfD: ", dfD)

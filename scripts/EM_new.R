@@ -10,18 +10,18 @@ setwd('~/')
 # ##for ex: reads have multiple duplicates, so then reshape will place duplicates into the same row and exand the columns; for SID, only the first one will be taken
 # ## row = reads are unique as id var  and col = SID changes per read 
 ptm = proc.time()
-syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/" #Viral-Strains/" #/space/s1/selina/
+syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
 
 dfD_path = glue("{syspath}dfD.feather")
 dfN_path = glue("{syspath}dfN.feather")
 SID_path = glue("{syspath}SID.feather")
 
 print(dfD_path)
-dfD = arrow::read_feather(dfD_path)
+dfD = arrow::read_feather(dfD_path)# compression='uncompressed')
 print(dfN_path)
-dfN = arrow::read_feather(dfN_path)
+dfN = arrow::read_feather(dfN_path)# compression='uncompressed')
 print(SID_path)
-SID = arrow::read_feather(SID_path)
+SID = arrow::read_feather(SID_path)#, compression='uncompressed')
 cat("\nRead in files", proc.time() - ptm)
 ptm = proc.time()
 # dfN = reshape(dfN, direction = "wide", idvar = "read", timevar = "SID")
