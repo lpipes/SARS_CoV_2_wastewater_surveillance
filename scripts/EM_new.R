@@ -11,7 +11,8 @@ case_num = "test"
 # ##for ex: reads have multiple duplicates, so then reshape will place duplicates into the same row and exand the columns; for SID, only the first one will be taken
 # ## row = reads are unique as id var  and col = SID changes per read 
 ptm = proc.time()
-syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
+#syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
+syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"
 
 dfD_path = glue("{syspath}dfD.feather")
 dfN_path = glue("{syspath}dfN.feather")

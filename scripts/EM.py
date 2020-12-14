@@ -6,7 +6,7 @@ dfD_path = "test_input/dfD.feather"
 dfN_path = "test_input/dfN.feather"
 SID_path = "test_input/SID.feather"
 
-output_reads_filepath = "test_input/test_input/output_revised.txt" # sys.argv[1]
+output_reads_filepath = "test_input/output_revised.txt" # sys.argv[1]
 
 t0 = time.time()
 output_mismatch_table = pd.read_csv(output_reads_filepath, sep="\t", header=0)
