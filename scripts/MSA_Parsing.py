@@ -180,7 +180,7 @@ print("Filter strains (# strains = ", len(ref_msa_table), ")", time.time() - t0)
 
 print("Eliminated", eliminated)
 
-f = open("eliminated_" +case+ ".txt", "a")
+f = open("test_input/eliminated.txt", "a")
 for e in eliminated:
         f.write(e + "\n")
 f.close()
