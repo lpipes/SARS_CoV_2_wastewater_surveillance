@@ -28,9 +28,9 @@ reads_col = output_mismatch_table["read"]
 
 # output_mismatch_table = output_mismatch_table.rename(columns={x:y for x,y in zip(output_mismatch_table.columns,range(0, n + 1))})
 ## dfN
-dfN_col = output_mismatch_table[1]
+dfN_col = output_mismatch_table["blockSize"]
 dfN_col = pd.DataFrame(data=dfN_col)
-dfN = pd.concat([reads_col, pd.concat([dfN_col] * (n+1), axis=1, ignore_index=True)], axis=1)
+dfN = pd.concat([reads_col, pd.concat([dfN_col] * (n-1), axis=1, ignore_index=True)], axis=1)
 
 ft.write_dataframe(dfN, dfN_path, compression='uncompressed')
 print("dfN: ", dfN)

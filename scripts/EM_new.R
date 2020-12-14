@@ -2,6 +2,7 @@ library(Matrix);library(plyr); library(data.table); library(dplyr); library(stri
 library(turboEM); library(hash); library(feather); library(glue); library(arrow); 
 setwd('~/')
 
+case_num = "test"
 #create matrix of alignments' lengths and matrix of numbers of differences
 # dfN = cbind(df_align[,c(1,5)], n=c(nd_mtx[,1]))
 # dfD = cbind(df_align[,c(1,5)], d=c(nd_mtx[,2]))
