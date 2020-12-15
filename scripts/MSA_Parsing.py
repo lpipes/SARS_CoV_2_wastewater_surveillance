@@ -49,7 +49,7 @@ t0 = time.time()
 with open(reference_msa_filepath, "r") as fasta_file: 
      msa = fasta_file.read().split(">")
      for strains in msa:
-            print(strains) 
+            #print(strains) 
             if strains != "":
                 s0 = strains.split("\n")
                 reference_strains.append(s0[0])
@@ -100,9 +100,9 @@ def find_matches(output_row, read_seq):
         alignments = list(map(int, alignments.split(","))) 
         allele_freq = np.repeat(np.array([0, 0, 0, 0, 1])[None, :], len(wuhanHu1_sequence), axis=0)#np.zeros((len(wuhanHu1_sequence), 5))
         
-        print(allele_freq)
+        #print(allele_freq)
         a = output_row["qStarts"]
-        print(a, type(a))
+        #print(a, type(a))
         
         starts = output_row["qStarts"].split(",")
         block_sizes = output_row["blockSizes"].split(",")
@@ -111,15 +111,15 @@ def find_matches(output_row, read_seq):
             end = int(start) + int(block_sizes[j])
             k = 0
             for i in range(start, end):
-                print(i, k)
+                #print(i, k)
                 tPosition = alignments[k]
                 #print(output_row[0], i, tPosition, np.size(allele_freq), len(read_seq), type(read_seq), len(alignments), read_seq[i], wuhanHu1_sequence[tPosition])
                 # if tPosition not in similarities:
                 a = convert_bp_to_array(read_seq[i])
-                print("a ", a, "tPosition", tPosition, " allele_freq[tPosition]", allele_freq[tPosition])
+                #print("a ", a, "tPosition", tPosition, " allele_freq[tPosition]", allele_freq[tPosition])
                 allele_freq[tPosition] = a
-                print(output_row["qName"])
-                print("allele_freq[tPosition]", allele_freq[tPosition])
+                #print(output_row["qName"])
+                #print("allele_freq[tPosition]", allele_freq[tPosition])
                 k += 1
                 # else: #ignore mismatches for now
                 #       allele_freq[m] = np.array([0, 0, 0, 0, 1])
@@ -134,7 +134,7 @@ for i in range(len(output_table)):
         output_reads_row = output_reads_table.loc[output_reads_table[0] == output_row[q_name]]
         read_seq =  output_reads_row[output_reads_sequence_col]
         allele_freq = find_matches(output_row, read_seq) 
-        print("allele freq", allele_freq)
+        #print("allele freq", allele_freq)
         np.add(total_freq_nuc, allele_freq)
 
 print("Calculate frequencies for each read (# reads = ", len(output_table), ")", time.time() - t0)
@@ -144,11 +144,11 @@ print("total_freq_nuc: ", total_freq_nuc)
 print("total_freq_nuc size: ", len(total_freq_nuc))
 print("total_freq_nuc size: ", total_freq_nuc.shape)
 
-print(total_freq_nuc)
+#print(total_freq_nuc)
 freq_nuc = np.zeros((len(wuhanHu1_sequence), 5))
 for row in range((len(wuhanHu1_sequence))):
         a = np.divide(total_freq_nuc[row], total_freq_nuc[row, 4])
-        print("a shape: ", a.shape, a, "     total_freq_nuc[row]: ", total_freq_nuc[row])
+        #print("a shape: ", a.shape, a, "     total_freq_nuc[row]: ", total_freq_nuc[row])
         freq_nuc[row] = a
 print("freq nuc: ", freq_nuc)
 
@@ -171,8 +171,8 @@ for index, row in ref_msa_table.iterrows():
         #print(strain_nuc, type(strain_nuc), len(strain_nuc))
         if strain != wuhanHu1:
                 freq_nuc_i = freq_nuc[range(freq_nuc.shape[0]), strain_nuc]
-                print("freq_nuc_i: ", freq_nuc_i, " freq_tresh: ", freq_tresh, " min_num_pos:", min_num_pos)
-                print(sum(freq_nuc_i < freq_tresh))
+                #print("freq_nuc_i: ", freq_nuc_i, " freq_tresh: ", freq_tresh, " min_num_pos:", min_num_pos)
+                #print(sum(freq_nuc_i < freq_tresh))
                 if sum(freq_nuc_i < freq_tresh) >= min_num_pos:
                         eliminated.add(strain)
                         acceptable.remove(strain)

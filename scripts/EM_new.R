@@ -11,8 +11,8 @@ case_num = "test"
 # ##for ex: reads have multiple duplicates, so then reshape will place duplicates into the same row and exand the columns; for SID, only the first one will be taken
 # ## row = reads are unique as id var  and col = SID changes per read 
 ptm = proc.time()
-#syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
-syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"
+syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
+#syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"
 
 dfD_path = glue("{syspath}dfD.feather")
 dfN_path = glue("{syspath}dfN.feather")
@@ -75,22 +75,16 @@ p = pars(res) #[c(2),]
 
 par(mar=c(13,4,4,1))
 
-names.arg = paste0(tolower(names(SID)[as.numeric(colnames(n_mtx))]), ", ", 1:k)
-
+names.arg = colnames(n_mtx) #paste0(tolower(names(SID)[as.numeric(colnames(n_mtx))]), ", ", 1:k)
 em_output_df = cbind(p, names.arg)
 em_output_df = as.data.frame(em_output_df)
 colnames(em_output_df) = c("p", "names.arg")
 
-print("EM Output")
-print(head(em_output_df))
 write.csv(em_output_df, file = paste(syspath, "em_output_", case_num, ".csv", sep=""))
 
 d <- data.table(em_output_df, key="p")
 d <- tail(d, 50)
 
-print("k:")
-print(k)
-print(length(names(SID)))
 pdf(paste(syspath, "rplot_case_", case_num, ".pdf", sep="")) 
 barplot(as.numeric(factor(d[["p"]])), beside = T, ylab = "p vec values", names.arg=d[["names.arg"]],
         cex.names=0.8, las=2, main='Viral strains estimation')
