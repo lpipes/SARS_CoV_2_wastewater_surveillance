@@ -42,11 +42,11 @@ def send_email(filelist):
 		part.add_header('Content-Disposition', 'attachment', filename=filename)
 		msg.attach(part)
 
-	server = smtplib.SMTP(smtpHost, 25)# SMTP协议默认端口为25
-    # server.set_debuglevel(1)  # 出错时可以查看
+	server = smtplib.SMTP(smtpHost, 25)
+    # server.set_debuglevel(1)  # can be used to check bugs
 	server.login(sendAddr, password)
 	server.sendmail(sendAddr, receiver, str(msg))
-	   # print("\n"+ str(len(filelist)) + "个文件发送成功")
+	   # print("\n"+ str(len(filelist)) + "files are successfully sent!")
 	server.quit()
 
 email_file = {}
