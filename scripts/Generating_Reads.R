@@ -25,8 +25,7 @@ for (i in 1:num_strains){
   s = strains[indices[i]]
   n = names(strains)[i]
   print(n)
-  write(i, file=s_file, append=T)
-  write(n, file=s_file, append=T)
+  write(i, ": ", n, file=s_file, append=T)
   for (j in 1:num_reads){
     idx = sample(1:(nchar(s)-len_read), 1) #random start position of the read in the strain
     r = substr(s,idx,idx+len_read-1) #extract the read from the strain
