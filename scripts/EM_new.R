@@ -3,35 +3,26 @@ library(turboEM); library(hash); library(feather); library(glue); library(arrow)
 setwd('~/')
 
 case_num = "test"
-#create matrix of alignments' lengths and matrix of numbers of differences
-# dfN = cbind(df_align[,c(1,5)], n=c(nd_mtx[,1]))
-# dfD = cbind(df_align[,c(1,5)], d=c(nd_mtx[,2]))
+syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
 
 # ##A ‘wide’ longitudinal dataset will have one record for each individual with some time-constant variables that occupy single columns and some time-varying variables that occupy a column for each time point. 
 # ##for ex: reads have multiple duplicates, so then reshape will place duplicates into the same row and exand the columns; for SID, only the first one will be taken
 # ## row = reads are unique as id var  and col = SID changes per read 
-ptm = proc.time()
-syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
-#syspath = "~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"
-
-dfD_path = glue("{syspath}dfD.feather")
-dfN_path = glue("{syspath}dfN.feather")
-SID_path = glue("{syspath}SID.feather")
-
-print(dfD_path)
-dfD = arrow::read_feather(dfD_path)# compression='uncompressed')
-print(dfN_path)
-dfN = arrow::read_feather(dfN_path)# compression='uncompressed')
-print(SID_path)
-SID = arrow::read_feather(SID_path)#, compression='uncompressed')
-cat("\nRead in files", proc.time() - ptm)
-ptm = proc.time()
 # dfN = reshape(dfN, direction = "wide", idvar = "read", timevar = "SID")
 # dfD = reshape(dfD, direction = "wide", idvar = "read", timevar = "SID")
+ptm = proc.time()
+data <- read.table("simulation_mismatches.txt",header=T)
+d_mtx <- data[,3:ncol(data)]
+d_mtx = cbind(data[,1], d_mtx)
+colnames(d_mtx) <- "read"
+cat("Loading matrices in from file", proc.time() - ptm)
+ptm = proc.time()
 
-##replace column names to remove the d.
-colnames(dfN)[2:ncol(dfN)] = substring(colnames(dfN)[2:ncol(dfN)], 3)
-colnames(dfD)[2:ncol(dfD)] = substring(colnames(dfD)[2:ncol(dfD)], 3)
+k = length(colnames(d_mtx))
+n_mtx <- matrix(rep(data[,2],k),nrow=nrow(d_mtx),ncol=k)
+colnames(n_mtx) <- colnames(d_mtx)
+n_mtx = cbind(data[,1], n_mtx)
+rownames(n_mtx)<-data[,1]
 
 ## get the total number of na values 
 sum(is.na(dfN))
