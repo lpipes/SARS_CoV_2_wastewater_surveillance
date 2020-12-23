@@ -9,13 +9,13 @@ names(strains) = tmp[seq(1,length(tmp),2)]
 names(strains) = gsub(pattern = ">", replacement = "", names(strains))
 
 num_strains = 1 #args[1] #3 #number of the strains the reads should be generated from
-num_reads = 100 # args[2] # 1000 #number of reads
+num_reads = 25000 # args[2] # 1000 #number of reads
 len_read = 300 #length of the read
 
-case_num = "t1-100"
-fname = paste0("reads_case", case_num, ".fasta") #"~/readsNCase1.fasta"#name of the file with reads
+case_num = "t1-25000"
+fname = paste0("test_input/reads_case", case_num, ".fasta") #"~/readsNCase1.fasta"#name of the file with reads
 r_file = file(fname, "w")
-fname = paste0("strains_case", case_num, ".txt")
+fname = paste0("test_input/strains_case", case_num, ".txt")
 s_file = file(fname, "w")
 
 indices = runif(num_strains, min = 0, max = length(names(strains))) ## Create vector of random indices 

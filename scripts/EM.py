@@ -10,7 +10,7 @@ output_reads_filepath = "output.txt" # sys.argv[1]
 eliminated_filepath = "test_input/eliminated.txt"
 
 t0 = time.time()
-output_mismatch_table_old = pd.read_csv(output_reads_filepath, sep="\t", header=0)
+output_mismatch_table = pd.read_csv(output_reads_filepath, sep="\t", header=0)
 readin_time = time.time() - t0
 print("Read in output mismatch reads", readin_time)
 
@@ -23,12 +23,10 @@ print(output_mismatch_table.size)
 print("col old: ", output_mismatch_table.columns)
 output_mismatch_table.drop(columns=eliminated)
 
-print(output_mismatch_table_old.size)
-print("col old: ", output_mismatch_table_old.columns)
-for e in eliminated:
-        print(e)
-        print(output_mismatch_table_old[(output_mismatch_table_old["read"] == e)].index)
-        output_mismatch_table = output_mismatch_table_old.drop(output_mismatch_table_old[(output_mismatch_table_old['read'] == e)].index)
+#for e in eliminated:
+#        print(e)
+#        print(output_mismatch_table[(output_mismatch_table["read"] == e)].index)
+#        output_mismatch_table = output_mismatch_table.drop(output_mismatch_table[(output_mismatch_table['read'] == e)].index)
 print(output_mismatch_table.size)
 
 # Get names of strains
