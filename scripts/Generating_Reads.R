@@ -21,6 +21,8 @@ s_file = file(fname, "w")
 indices = runif(num_strains, min = 0, max = length(names(strains))) ## Create vector of random indices 
 print(indices)
 
+names <- vector("list", num_reads)
+
 for (i in 1:num_strains){
   s = strains[indices[i]]
   n = names(strains)[i]
@@ -29,9 +31,11 @@ for (i in 1:num_strains){
   for (j in 1:num_reads){
     idx = sample(1:(nchar(s)-len_read), 1) #random start position of the read in the strain
     r = substr(s,idx,idx+len_read-1) #extract the read from the strain
-    write(paste0(">r", j, "s", i, "p", idx), file=r_file, append=T) #write the name of read in the format:
-#>r2s1p27015, where 2 is the index of the read, 1 is the index of the strain, 27015 is the start position of the read in the strain
-    write(r, file=r_file, append=T)#write the read to the file
+    name = paste0(">r", j, "s", i, "p", idx)
+    if (!(name %in% names)) {
+        write(name, file=r_file, append=T) #write the name of read in the format: #>r2s1p27015, where 2 is the index of the read, 1 is the index of the strain, 27015 is the start position of the read in the strain
+        write(r, file=r_file, append=T)#write the read to the file
+        }
     }
 
   }
