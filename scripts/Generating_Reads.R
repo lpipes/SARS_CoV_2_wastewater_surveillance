@@ -8,16 +8,17 @@ strains = tmp[seq(2,length(tmp),2)] #viral strains
 names(strains) = tmp[seq(1,length(tmp),2)]
 names(strains) = gsub(pattern = ">", replacement = "", names(strains))
 
-num_strains = 1 #args[1] #3 #number of the strains the reads should be generated from
-num_reads = 25000 # args[2] # 1000 #number of reads
+seed = 2 
+num_strains = 10 #args[1] #3 #number of the strains the reads should be generated from
+num_reads = 2000 # args[2] # 1000 #number of reads
 len_read = 300 #length of the read
 
-case_num = "t1-25000"
+case_num = paste0("t", num_strains, "_", num_reads, "_", seed)
 fname = paste0("test_input/reads_case", case_num, ".fasta") #"~/readsNCase1.fasta"#name of the file with reads
 r_file = file(fname, "w")
 fname = paste0("test_input/strains_case", case_num, ".txt")
 s_file = file(fname, "w")
-
+set.seed(seed)
 indices = runif(num_strains, min = 0, max = length(names(strains))) ## Create vector of random indices 
 print(indices)
 
@@ -25,7 +26,7 @@ names <- vector("list", num_reads)
 
 for (i in 1:num_strains){
   s = strains[indices[i]]
-  n = names(strains)[i]
+  n = names(strains)[indices[i]]
   print(n)
   write(paste0(i, ": ", n), file=s_file, append=T)
   for (j in 1:num_reads){
