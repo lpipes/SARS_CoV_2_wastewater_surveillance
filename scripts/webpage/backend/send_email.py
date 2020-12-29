@@ -8,8 +8,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+path = os.path.join(basedir, 'upload')
 
-path = 'C:/Users/61427/Desktop/login/outputs'
 key = '.txt'
 def get_type_file(path, key): # Get the out put txt files
 	# list all the filenames
