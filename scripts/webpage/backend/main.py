@@ -4,7 +4,13 @@ import os
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 
-UPLOAD_FOLDER = 'C:/Users/61427/Desktop/login/uploads/'
+basedir = os.path.abspath(os.path.dirname(__file__))
+uploadDir = os.path.join(basedir, 'upload')
+
+# set the path for uploaded files
+UPLOAD_FOLDER = uploadDir
+
+# set the form of files
 ALLOWED_EXTENSIONS = {'txt', 'fasta'}
 
 
