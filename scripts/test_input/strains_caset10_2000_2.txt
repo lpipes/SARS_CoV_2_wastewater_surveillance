@@ -1,0 +1,10 @@
+1: CostaRica/01/2020
+2: Spain/Albacete-COV003776/2020
+3: NorthernIreland/NIRE-10010C/2020
+4: Canada/Qc-L00240866/2020
+5: USA/TX-HMH0104/2020
+6: USA/TX-HMH0103/2020
+7: Brazil/RJ-1555/2020
+8: USA/CruiseA-4/2020
+9: Italy/FVG-ICGEB_bal1A/2020
+10: Netherlands/Limburg_16/2020

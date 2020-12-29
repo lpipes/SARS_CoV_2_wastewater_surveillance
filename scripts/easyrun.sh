@@ -11,10 +11,12 @@ LINE="============"
 start=$SECONDS
 bowtie2 -a --threads 1 -x wuhCor1 -f -U $FILE -S $SAM 
 duration=$(( SECONDS - start ))
-echo "${LINE} Time for alignment: ${duration} ${LINE}" > $TIMES 
+echo "${LINE} Time for alignment: ${duration} ${LINE}" >> $TIMES 
 
 perl sam2mismatches.pl $MSA $SAM 
-echo "${LINE} Time for mismatches: ${duration} ${LINE}" > $TIMES
+duration=$(( SECONDS - start ))
+echo "${LINE} Time for mismatches: ${duration} ${LINE}" >> $TIMES
 
 perl elimination_sam2mismatches.pl $MSA $SAM $EMOUT 
-echo "${LINE} Time for filter: ${duration} ${LINE}" > $TIMES
+duration=$(( SECONDS - start ))
+echo "${LINE} Time for filter: ${duration} ${LINE}" >> $TIMES

@@ -2,7 +2,7 @@ library(Matrix);library(plyr); library(data.table); library(dplyr); library(stri
 library(turboEM); library(hash); library(feather); library(glue); library(arrow); 
 setwd('~/')
 
-case_num = "t4_5000_3"
+case_num = "t10_2000_2"
 syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input/"#"test_input/test_input/"#/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_input" #Viral-Strains/" #~/Desktop/sars-Cov-2/SARS_CoV_2_wastewater_surveillance/
 
 # ##A ‘wide’ longitudinal dataset will have one record for each individual with some time-constant variables that occupy single columns and some time-varying variables that occupy a column for each time point. 
@@ -11,7 +11,7 @@ syspath = "/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/test_inpu
 # dfN = reshape(dfN, direction = "wide", idvar = "read", timevar = "SID")
 # dfD = reshape(dfD, direction = "wide", idvar = "read", timevar = "SID")
 ptm = proc.time()
-data <- read.table("/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/times/mismatches_output_.txt",fill = TRUE, header=T)
+data <- read.table(paste0("/space/s1/selina/SARS_CoV_2_wastewater_surveillance/scripts/times/mismatches_output_", case_num, ".txt"),fill = TRUE, header=T)
 cat("data: ", dim(data))
 d_mtx <- data[,3:ncol(data)]
 reads<-data[,1]
