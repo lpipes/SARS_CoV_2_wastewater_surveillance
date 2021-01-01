@@ -1,69 +1,162 @@
 <!DOCTYPE html>
+
 <html lang="en">
-  <head>
-    <title>Upload</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+
+<head>
+	<title>Upload</title>
+
+	<meta charset="UTF-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}" />
 
 
-    <title>Upload Your Sequences</title>
+	<title>Upload Your Sequences</title>
 
-    <script type="text/javascript">
+	<script type="text/javascript">
 
-        function UpladFile() {
+		function UpladFile() {
 
-            var fileObj = document.getElementById("file").files[0]; // get file object
+			var fileObj = document.getElementById("file").files[0]; // get file object
 
-            var api = "http://127.0.0.1:5000/";                    // backend address
+			var api = "http://127.0.0.1:5000/upload";                    // backend address
 
-            // FormData object
+			// FormData object
+			console.log('----fileObj-------');
+			console.log(fileObj);
 
-            var form = new FormData();
+			var fd = new FormData();
+	        fd.append("file", fileObj);
 
-            form.append("file", fileObj);                           // file object
+			console.log('----send-------');
+			console.log(fd);
+			// XMLHttpRequest 
 
-            // XMLHttpRequest 
+			var xhr = new XMLHttpRequest();
 
-            var xhr = new XMLHttpRequest();
+			xhr.open("post", api, true);
 
-            xhr.open("post", api, true);
+			// xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded;charset=UTF-8");
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+			
+			xhr.send(fd);
+			xhr.onload = function () {
+				alert("Successfully uploaded!");
+				window.location.reload();
+			};
 
-            xhr.onload = function () {
 
-                alert("Success!");
+		}
 
-            };
+		function show() {
 
-            xhr.send(form);
+			var reader = new FileReader();
 
-        }
+			reader.onload = function () {
 
-</script>
+				alert(this.result)
+
+			}
+
+			var f = document.getElementById("filePicker").files[0];
+
+			reader.readAsText(f);
+		}
+
+		// -----------------juedge the file format and preview------------------
+		function hideReviewer() {
+			var fileObj = document.getElementById("reviewerImg");
+			fileObj.style.display = "none";
+			var fileObj2 = document.getElementById("reviewer");
+			fileObj2.style.display = "none";
+		};
+
+		function jsReadFiles(files) {
+			console.log('============');
+			console.log(files)
+			var fileObj = document.getElementById("reviewer");
+			fileObj.style.display = "block";
+			var fileObj2 = document.getElementById("reviewerImg");
+			fileObj2.style.display = "block";
+			if (files == '') {
+				return
+			}
+			if (files.length) {
+				var file = files[0];
+				console.log(file.type + '============');
+				var reader = new FileReader();
+				if (/text+/.test(file.type)) {//judge the format of the file(txt.)
+					reader.onload = function () {
+						console.log(this.result);
+						fileObj.innerText = this.result;
+					}
+					console.log('---------------');
+					console.log(this.result);
+					reader.readAsText(file);
+				} else {
+					alert('Not TXT, Please Reupload');
+				}
+			}
+		};
+
+		// send an email
+		function send_email(){
+			console.log('-----press send email-----');
+			var xhr = new XMLHttpRequest();
+			var api = "http://127.0.0.1:5000/email_send_attach";
+			//var api = "http://127.0.0.1:5000/email_send_charactor";
+			xhr.open("get", api, true);
+			xhr.send();
+			alert('Send Email to users OK');
+		};
+	</script>
 
 </head>
 
 <body>
-<div class="limiter">
-      <div class="container">
-        <div class="wrap">
-			<div class="container-login-btn">
-				<span class="form-title">Upload Now(.txt/.fasta only)</span>
-				<input type="file" id="file" name="myfile" />
-				<br></br>
-				<input class="login-form-btn" type="button" onclick="UpladFile()" value="SUBMIT" action="/"/>
+	<div class="limiter">
+		{% block content %}
+		<div class="container">
+			<div class="wrap">
+				<div class="container-login-btn">
+					{% with messages = get_flashed_messages(with_categories=true) %}
+					{% if messages %}
+					{% for category, message in messages %}
+					{% if category in ["success","danger"] %}
+					<div class="alert alert-{{ category }}">
+						<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+						{{ message }}
+					</div>
+					{% endif %}
+					{% endfor %}
+					{% endif %}
+					{% endwith %}
+					<span class="form-title">Upload Now(.txt only)</span>
+					<input type="file" id="file" name="myfile" onchange="jsReadFiles(this.files)" />
+					<span onclick="jsReadFiles('');"
+						style="border: 1px solid #ccc;height: 24px;width: 53px;">Preview</span>
+					<div id="reviewer"></div>
+					<div id="reviewerImg" onclick="hideReviewer()"><img src="../static/cancel.png" alt=""></div>
+					<br></br>
+					<!-- <form action="upload" enctype="multipart/form-data" method="POST">
+						<input type="file" id="file" name="myfile" onchange="jsReadFiles(this.files)" />
+						<input class="login-form-btn" type="submit" onclick="UpladFile()" value="SUBMIT"/>
+					</form> -->
+
+					<input class="login-form-btn" type="button" onclick="UpladFile()" value="SUBMIT" action="/upload" />
+					{% if imagename %}
+					<img src="{{ url_for('static',filename='uploads/'+imagename) }}" width="300px" height="300px" />
+					{% endif %}
+					<button id="sendEmail" onclick="send_email()">SendEmail</button>
+				</div>
 			</div>
 		</div>
+		{% endblock %}
 	</div>
-</div>
 
 </body>
+
 </html>
