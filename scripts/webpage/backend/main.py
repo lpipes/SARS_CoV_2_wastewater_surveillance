@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, make_response
 import atexit, yaml
 import os
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
+from flask_bootstrap import Bootstrap
+from flask_mail import Mail,Message  # sending the emails
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 uploadDir = os.path.join(basedir, 'upload')
@@ -11,14 +13,37 @@ uploadDir = os.path.join(basedir, 'upload')
 UPLOAD_FOLDER = uploadDir
 
 # set the form of files
-ALLOWED_EXTENSIONS = {'txt', 'fasta'}
-
+ALLOWED_EXTENSIONS = {'txt'}
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
+
+# email address information
+app.config.update(dict(
+    DEBUG=True,
+    MAIL_SERVER="smtp.163.com",
+    # MAIL_PORT=587,
+    # MAIL_USE_TLS=True,
+    MAIL_PORT=465,  # 163--465
+    MAIL_USE_SSL=True,
+    MAIL_USE_TLS=False,
+    MAIL_USERNAME="sars_cov2@163.com",   # my email address
+    MAIL_PASSWORD="BZIXVTMTZUDTGVWL",          # my email password
+    MAIL_DEFAULT_SENDER=("sars_cov2@163.com"),  # defult sending address
+    MAIL_DEBUG=True,
+
+))
+
+
+mail = Mail(app)   # create a mail
+
+bootstrap = Bootstrap(app)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = os.urandom(24)
 account_dic = {}
 email_list = []
 email_file = {}
+
 
 @app.route("/")
 def main():
@@ -97,113 +122,102 @@ def register_handler():
 def get_email():
     if request.method == 'POST':
         email = request.form['email']
-
         if email == '':
             error = 'Please enter your email address!'
             return redirect('end_point.html',error=error)
-
         else:
             email_list.append(email)
+            print('email_list:',email_list)
             return render_template('upload.html')
 
-    
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
+        print(request.files)
         if 'file' not in request.files:
-            flash('No file part')
+            # flash('No file part')
             return redirect(request.url)
         file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            save_email(email_list,filename)
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+        # check if the path exist, if not, create it
+        if not os.path.exists(uploadDir):
+            os.makedirs(uploadDir)
+        if file:
+            if allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                print('----:',email_list, filename)
+                create_email(email_list, filename)
+                save_email()
+                msg = 'Upload Load Successful!'
+                print(msg)
+                return render_template('end_point.html', msg=msg)
+            else:
+                flash('Unknown Types!', 'danger')
+                return render_template('end_point.html')
+        else:
+            flash('No File Selected.', 'danger')
+        return render_template('end_point.html')
+    return render_template('end_point.html')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Method to add new accounts into dictionary
 def create_account(username, password):
     account_dic[username] = password
 
-#Method to add new emails and fastas into dictionary
-# def create_address(email, filename):
-# 	email_file[email] = filename
+# Mewhod to add new email addresses into dictionary
+def create_email(email_list, filename):
+    email_file[email_list[-1]] = filename
 
 # Method to check if password is valid
 def password_validator(username, password):
-
     if account_dic is None:
         return False
-
     check_password = account_dic[username]
-
     if check_password == password:
         return True
-
     return False
-
 
 # Method to check for existing account
 def has_account(username):
-
     if account_dic is None:
         return False
-
     for user in account_dic.keys():
-
         if user == username:
             return True
-
     return False
 
 # Save dictionary into a yml
 def save_account():
     with open('storage.yml', 'w') as f:
-
         yaml.dump(account_dic, f)
 
 # Save dictionary into a yml
-def save_email(email_list,filename):
-    for email in email_list:
-        
-        email_file[email] = filename
-
-    with open('email_file.yml', 'w') as f2:
-
+def save_email():
+    with open('email_file.yml', 'a') as f2:
     	yaml.dump(email_file,f2)
 
 # Load yml file into dictionary
 def load():
-
     with open('storage.yml', 'r') as file_descriptor:
         data = yaml.safe_load(file_descriptor)
-
         for key in data:
             account_dic[key] = data.get(key)
+
+# from main import send_email_by_auto
+def send_email_by_auto():
+    import requests
+    respons = requests.get('127.0.0.1:5000/email_send_attach')
+    print(respons.status_code)  #return 200 is success
+
 
 if __name__ == "__main__":
     load()
