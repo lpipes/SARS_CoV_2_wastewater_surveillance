@@ -1,7 +1,7 @@
 # SARS_CoV_2_wastewater_surveillance
 
 ## Notes for EM.R
-To run EM algorithm, use command: Rscript EM.R [mismatch matrix] [error rate (optional, default = 0.005)]
+To run EM algorithm, use command: Rscript EM.R [mismatch matrix.txt] [error rate (optional, default = 0.005)]
 
 The estimated proportion of candidate strains will be in the .csv file whose name begins with "em_output_". Also, a barplot will be in the .pdf file whose name starts with "proportion_plot_".
 
