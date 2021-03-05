@@ -30,6 +30,11 @@ ptm <- proc.time()
 data <- read.table(args[1], header = T)
 cat("Loading matrices in from file", (proc.time() - ptm)[3])
 
+if (nrow(data)<20){
+  print("Not enough reads!")
+  quit()
+}
+
 ptm <- proc.time()
 strains <- colnames(data[, 3:ncol(data)])
 names(strains) <- strains
