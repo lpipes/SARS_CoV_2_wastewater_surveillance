@@ -195,7 +195,7 @@ int removeIdenticalStrains(int number_of_strains, int length_of_MSA, int** MSA, 
 	return number_of_strains-number_of_identical_strains;
 }
 
-int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_of_MSA, int** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int* identical, int number_of_different_strains){
+int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_of_MSA, int** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int* identical, int number_of_different_strains, int number_of_variant_sites, int* variant_sites){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -246,10 +246,10 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 	printf("Eliminating strains...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
 	int number_remaining=0;
-	for(i=0; i<length_of_MSA; i++){
+	for(i=0; i<number_of_variant_sites; i++){
 		for(j=0; j<number_of_different_strains; j++){
-			if ( MSA[identical[j]][reference[i]] > 0 ){
-				if ( allele[reference[i]][MSA[identical[j]][reference[i]]-1] < freq_threshold ){
+			if ( MSA[identical[j]][reference[variant_sites[i]]] > 0 ){
+				if ( allele[reference[variant_sites[i]]][MSA[identical[j]][reference[variant_sites[i]]]-1] < freq_threshold ){
 					memset(names_of_strains[identical[j]],'\0',maxname);
 				}
 			}
@@ -342,6 +342,25 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, int** MSA, int* strains_
 	}
 }
 
+int* readVariantSitesFile(FILE* variant_sites_file, int* number_of_sites){
+	char buffer [20];
+	int iter=0;
+	int* variant_sites;
+	int placement=0;
+	while( fgets(buffer,20,variant_sites_file) != NULL){
+		if (iter==0){
+			number_of_sites[0]=atoi(buffer);
+			variant_sites = (int*)malloc(number_of_sites[0]*sizeof(int));
+			memset(variant_sites,0,number_of_sites[0]);
+			iter++;
+		}else{
+			variant_sites[placement]=atoi(buffer);
+			placement++;
+		}
+	}
+	return variant_sites;
+}
+
 int main(int argc, char **argv){
 	struct timespec tstart={0,0}, tend={0.0};
 	Options opt;
@@ -389,14 +408,14 @@ int main(int argc, char **argv){
 	fclose(MSA_file);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
-	int* imputation = (int *)malloc(length_of_MSA*sizeof(int));
-	findMaxAllele(length_of_MSA,allele_max,imputation);
-	for(i=0; i<length_of_MSA; i++){
-		free(allele_max[i]);
-	}
-	free(allele_max);
-	imputeNucMat(number_of_strains,length_of_MSA,MSA,imputation);
-	free(imputation);
+	//int* imputation = (int *)malloc(length_of_MSA*sizeof(int));
+	//findMaxAllele(length_of_MSA,allele_max,imputation);
+	//for(i=0; i<length_of_MSA; i++){
+	//	free(allele_max[i]);
+	//}
+	//free(allele_max);
+	//imputeNucMat(number_of_strains,length_of_MSA,MSA,imputation);
+	//free(imputation);
 	int* identical = (int *)malloc(number_of_strains*sizeof(int));
 	int number_of_identical_strains=number_of_strains;
 	if (opt.remove_identical==0){
@@ -404,16 +423,24 @@ int main(int argc, char **argv){
 			identical[i]=i;
 		}
 	}
-	if (opt.remove_identical==1){
-		printf("Finding identical sequences\n");
-		clock_gettime(CLOCK_MONOTONIC, &tstart);
-		for(i=0; i<number_of_strains; i++){
-			identical[i]=-1;
-		}
-		number_of_identical_strains=removeIdenticalStrains(number_of_strains,length_of_MSA,MSA,identical,names_of_strains,max_name_length);
-		clock_gettime(CLOCK_MONOTONIC, &tend);
-		printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
-	}	
+	//if (opt.remove_identical==1){
+	//	printf("Finding identical sequences\n");
+	//	clock_gettime(CLOCK_MONOTONIC, &tstart);
+	//	for(i=0; i<number_of_strains; i++){
+	//		identical[i]=-1;
+	//	}
+	//	number_of_identical_strains=removeIdenticalStrains(number_of_strains,length_of_MSA,MSA,identical,names_of_strains,max_name_length);
+	//	clock_gettime(CLOCK_MONOTONIC, &tend);
+	//	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+	//}	
+	FILE* variant_sites_file;
+	int* variant_sites;
+	int* number_of_variant_sites_p = (int *)malloc(sizeof(int));
+	if ((variant_sites_file = fopen(opt.variant,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	variant_sites=readVariantSitesFile(variant_sites_file,number_of_variant_sites_p);
+	fclose(variant_sites_file);
+	int number_of_variant_sites = number_of_variant_sites_p[0];
+	free(number_of_variant_sites_p);
 	printf("Calculating allele frequencies...\n");
 	FILE* sam_file;
 	if ((sam_file = fopen(opt.sam,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
@@ -425,7 +452,7 @@ int main(int argc, char **argv){
 		}
 	}
 	int number_of_strains_remaining=0;
-	number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,reference,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,identical,number_of_identical_strains);
+	number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,reference,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,identical,number_of_identical_strains,number_of_variant_sites,variant_sites);
 	fclose(sam_file);
 	for(i=0; i<length_of_MSA; i++){
 		free(allele_frequency[i]);
