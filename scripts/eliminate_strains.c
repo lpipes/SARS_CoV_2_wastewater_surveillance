@@ -317,20 +317,20 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, int** MSA, int* strains_
 			for(i=0; i<number_of_strains_remaining; i++){
 				int number_of_mismatches = 0;
 				for(j=0; j<size; j++){
-					if ( sequence[i] == 'A' || sequence[i] == 'a' ){
-						if ( MSA[strains_kept[i]][reference[i+position]] != 1 && MSA[strains_kept[i]][reference[i+position]] != 0){
+					if ( sequence[j] == 'A' || sequence[j] == 'a' ){
+						if ( MSA[strains_kept[i]][reference[j+position]] != 1 && MSA[strains_kept[i]][reference[j+position]] != 0){
 							number_of_mismatches++;
 						}
-					}else if ( sequence[i] == 'G' || sequence[i] == 'g' ){
-						if (MSA[strains_kept[i]][reference[i+position]] != 2 && MSA[strains_kept[i]][reference[i+position]] != 0){
+					}else if ( sequence[j] == 'G' || sequence[j] == 'g' ){
+						if (MSA[strains_kept[i]][reference[j+position]] != 2 && MSA[strains_kept[i]][reference[j+position]] != 0){
 							number_of_mismatches++;
 						}
-					}else if ( sequence[i] == 'C' || sequence[i] == 'c' ){
-						if (MSA[strains_kept[i]][reference[i+position]] != 3 && MSA[strains_kept[i]][reference[i+position]] != 0 ){
+					}else if ( sequence[j] == 'C' || sequence[j] == 'c' ){
+						if (MSA[strains_kept[i]][reference[j+position]] != 3 && MSA[strains_kept[i]][reference[j+position]] != 0 ){
 							number_of_mismatches++;
 						}
-					}else if ( sequence[i] == 'T' || sequence[i] == 't' ){
-						if (MSA[strains_kept[i]][reference[i+position]] != 4 && MSA[strains_kept[i]][reference[i+position]] != 0){
+					}else if ( sequence[j] == 'T' || sequence[j] == 't' ){
+						if (MSA[strains_kept[i]][reference[j+position]] != 4 && MSA[strains_kept[i]][reference[j+position]] != 0){
 							number_of_mismatches++;
 						}
 					}
