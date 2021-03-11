@@ -1,3 +1,5 @@
+import re
+
 from flask import Flask, render_template, request, flash, redirect, url_for, make_response
 import atexit, yaml
 import os
@@ -6,8 +8,18 @@ from flask import send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail,Message  # sending the emails
 
+from login.backend.pic_plot.plot_pic import picture
+from login.backend.script import execute_cmd
+from login.backend.send_email import send_email
+
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 uploadDir = os.path.join(basedir, 'upload')
+
+# Rpath, with packages installed
+Rscript_PATH = 'D:/R/R-4.0.4/bin'
+# output path
+OUTPUT_PATH = os.path.join(basedir, 'output')
 
 # set the path for uploaded files
 UPLOAD_FOLDER = uploadDir
@@ -135,6 +147,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -150,10 +163,25 @@ def upload_file():
         if file:
             if allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                upload_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(upload_file_path)
                 print('----:',email_list, filename)
+
+                # import R, process the data and send emails
+                res = execute_cmd(Rscript_PATH, 'EM.R', upload_file_path)
+                if not res['status']:
+                    error_msg = re.search('Error: (.*?)"', res['message']).group(1)
+                    send_email(filelist=[], pic_path='', receiver=email_list[-1], content=error_msg)
+                    return render_template('end_point.html', msg=error_msg)
                 create_email(email_list, filename)
                 save_email()
+                # Use R for csv and picture results
+                csv_path = os.path.join(OUTPUT_PATH, 'r_output.csv')
+                pdf_path = os.path.join(OUTPUT_PATH, 'r_output.pdf')
+                picture(csv_path=csv_path, out_path=OUTPUT_PATH)
+                pic_path = os.path.join(OUTPUT_PATH, 'pic_plot.png')
+                send_email(filelist=[pdf_path, csv_path], pic_path=pic_path, receiver=email_list[-1])
+
                 msg = 'Upload Load Successful!'
                 print(msg)
                 return render_template('end_point.html', msg=msg)
