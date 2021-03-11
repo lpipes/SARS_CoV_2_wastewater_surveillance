@@ -7,12 +7,13 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from email.mime.image import MIMEImage
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 path = os.path.join(basedir, 'upload')
 
 key = '.txt'
-def get_type_file(path, key): # Get the out put txt files
+def get_type_file(path, key): # Get the output txt files
 	# list all the filenames
     files = os.listdir(path)
     file_list=[]
@@ -21,14 +22,14 @@ def get_type_file(path, key): # Get the out put txt files
             file_list.append(file)
     return file_list
 
-def send_email(filelist):
+def send_email(filelist, pic_path, receiver, content=None):
 	load()
 	smtpHost = 'smtp.163.com'
 	sendAddr = 'sars_cov2@163.com'
-	password = 'UXRXEQZJIZXLVBPL'
+	password = 'YTKPXXRKISOTASSV'
 	subject = "SARS_COV2_WasteWater_Surveillance_Result"
-	content = "Here's the result."
-	receiver = 'guxiaoyi1809@163.com'
+	content = content if content else "Here's the result."
+	receiver = receiver #lpipes@berkeley.edu
 
 	msg = MIMEMultipart()
 
@@ -37,11 +38,16 @@ def send_email(filelist):
 	msg['Subject'] = subject
 	txt = MIMEText(content, 'plain', 'utf-8')
 	msg.attach(txt)  # Input the main body
-	for file in filelist: # Add the attachment(output files)
+
+	for file in filelist:  # Add the attachment(output files)
 		filename = file
-		part = MIMEApplication(open(path + '/' + filename, 'rb').read())
+		part = MIMEApplication(open(filename, 'rb').read())
 		part.add_header('Content-Disposition', 'attachment', filename=filename)
 		msg.attach(part)
+	if pic_path:
+		figure = MIMEApplication(open(pic_path, 'rb').read())
+		figure.add_header('Content-Disposition', 'attachment', filename='outcome.png')
+		msg.attach(figure)
 
 	server = smtplib.SMTP(smtpHost, 25)
     # server.set_debuglevel(1)  # can be used to check bugs
@@ -65,4 +71,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
- 
