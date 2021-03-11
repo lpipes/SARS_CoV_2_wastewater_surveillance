@@ -42,7 +42,7 @@ void setNumStrains(FILE* MSA_file, int* strain_info){
 	strain_info[1]=maxname;
 }
 
-void readInMSA(FILE* MSA_file, int** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
+void readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
 	char buffer [FASTA_MAXLINE];
 	int i=0;
 	int index=-1;
@@ -64,19 +64,19 @@ void readInMSA(FILE* MSA_file, int** MSA, int** allele_frequency, char** names, 
 			int size = strlen(buffer);
 			for(i=0; i<size; i++){
 				if (buffer[i]=='A' || buffer[i]=='a'){
-					MSA[index][i]=1;
+					MSA[index][i]='A';
 					allele_frequency[i][0]++;
 				}else if (buffer[i]=='G' || buffer[i]=='g'){
-					MSA[index][i]=2;
+					MSA[index][i]='G';
 					allele_frequency[i][1]++;
 				}else if (buffer[i]=='C' || buffer[i]=='c'){
-					MSA[index][i]=3;
+					MSA[index][i]='C';
 					allele_frequency[i][2]++;
 				}else if (buffer[i]=='T' || buffer[i]=='t'){
-					MSA[index][i]=4;
+					MSA[index][i]='T';
 					allele_frequency[i][3]++;
 				}else if (buffer[i]=='-'){
-					MSA[index][i]=0;
+					MSA[index][i]='-';
 				}else{
 					MSA[index][i]=-1;
 				}
@@ -84,7 +84,7 @@ void readInMSA(FILE* MSA_file, int** MSA, int** allele_frequency, char** names, 
 			if (found_ref==1){
 				int placement = 0;
 				for(i=0; i<length_of_MSA; i++){
-					if ( MSA[index][i] != 0 ){
+					if ( MSA[index][i] != '-' ){
 						reference[placement] = i;
 						placement++;
 					}
@@ -195,7 +195,7 @@ int removeIdenticalStrains(int number_of_strains, int length_of_MSA, int** MSA, 
 	return number_of_strains-number_of_identical_strains;
 }
 
-int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_of_MSA, int** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int* identical, int number_of_different_strains, int number_of_variant_sites, int* variant_sites){
+int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int* identical, int number_of_different_strains, int number_of_variant_sites, int* variant_sites){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -241,18 +241,41 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 		}
 		//printf("%lf %lf %lf %lf\n",allele[i][0],allele[i][1],allele[i][2],allele[i][3]);
 	}
+	int length_of_reference = 0;
+	for (i=0; i<length_of_MSA; i++){
+		if ( reference[i]==-1 ){
+			break;
+		}else{
+			length_of_reference++;
+		}
+	}
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	printf("Eliminating strains...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
 	int number_remaining=0;
-	for(i=0; i<number_of_variant_sites; i++){
-		for(j=0; j<number_of_different_strains; j++){
-			if ( MSA[identical[j]][reference[variant_sites[i]]] > 0 ){
-				if ( allele[reference[variant_sites[i]]][MSA[identical[j]][reference[variant_sites[i]]]-1] < freq_threshold ){
-					memset(names_of_strains[identical[j]],'\0',maxname);
+	int next=0;
+	for(i=0; i<length_of_reference; i++){
+		if ( i==variant_sites[next] ){
+			for(j=0; j<number_of_different_strains; j++){
+				if ( MSA[identical[j]][reference[i]] != '-' ){
+					int base;
+					if ( MSA[identical[j]][reference[i]] == 'A' ){
+						base=0;
+					}else if ( MSA[identical[j]][reference[i]] == 'G' ){
+						base=1;
+					}else if ( MSA[identical[j]][reference[i]] == 'C' ){
+						base=2;
+					}else if ( MSA[identical[j]][reference[i]] == 'T' ){
+						base=3;
+					}
+					if ( allele[reference[i]][base] < freq_threshold ){
+						//memset(names_of_strains[identical[j]],'\0',maxname);
+						names_of_strains[identical[j]][0] = '\0';
+					}
 				}
 			}
+			next++;
 		}
 	}
 	clock_gettime(CLOCK_MONOTONIC, &tend);
@@ -267,7 +290,7 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 	return number_remaining;
 }
 
-void writeMismatchMatrix( FILE* outfile, FILE* samfile, int** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining, char** names_of_strains, int* reference){
+void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining, char** names_of_strains, int* reference){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -318,19 +341,19 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, int** MSA, int* strains_
 				int number_of_mismatches = 0;
 				for(j=0; j<size; j++){
 					if ( sequence[j] == 'A' || sequence[j] == 'a' ){
-						if ( MSA[strains_kept[i]][reference[j+position]] != 1 && MSA[strains_kept[i]][reference[j+position]] != 0){
+						if ( MSA[strains_kept[i]][reference[j+position]] != 'A' && MSA[strains_kept[i]][reference[j+position]] != '-'){
 							number_of_mismatches++;
 						}
 					}else if ( sequence[j] == 'G' || sequence[j] == 'g' ){
-						if (MSA[strains_kept[i]][reference[j+position]] != 2 && MSA[strains_kept[i]][reference[j+position]] != 0){
+						if (MSA[strains_kept[i]][reference[j+position]] != 'G' && MSA[strains_kept[i]][reference[j+position]] != '-'){
 							number_of_mismatches++;
 						}
 					}else if ( sequence[j] == 'C' || sequence[j] == 'c' ){
-						if (MSA[strains_kept[i]][reference[j+position]] != 3 && MSA[strains_kept[i]][reference[j+position]] != 0 ){
+						if (MSA[strains_kept[i]][reference[j+position]] != 'C' && MSA[strains_kept[i]][reference[j+position]] != '-' ){
 							number_of_mismatches++;
 						}
 					}else if ( sequence[j] == 'T' || sequence[j] == 't' ){
-						if (MSA[strains_kept[i]][reference[j+position]] != 4 && MSA[strains_kept[i]][reference[j+position]] != 0){
+						if (MSA[strains_kept[i]][reference[j+position]] != 'T' && MSA[strains_kept[i]][reference[j+position]] != '-'){
 							number_of_mismatches++;
 						}
 					}
@@ -381,10 +404,10 @@ int main(int argc, char **argv){
 	free(strain_info);
 	printf("Number of strains: %d\n",number_of_strains);
 	//printf("Maxname length: %d\n",max_name_length);
-	int** MSA = (int **)malloc(number_of_strains*sizeof(int *));
+	char** MSA = (char **)malloc(number_of_strains*sizeof(char *));
 	int i,j;
 	for(i=0; i<number_of_strains; i++){
-		MSA[i] = (int *)malloc(length_of_MSA*sizeof(int));
+		MSA[i] = (char *)malloc(length_of_MSA*sizeof(char));
 	}
 	char** names_of_strains = (char**)malloc(number_of_strains*sizeof(char *));
 	for(i=0; i<number_of_strains; i++){
