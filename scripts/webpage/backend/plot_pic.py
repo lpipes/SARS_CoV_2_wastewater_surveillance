@@ -57,7 +57,7 @@ def picture(csv_path, out_path):
 	plt.barh(loc_list,p_list,color = 'cornflowerblue')
 
 	# plt.bar(loc_list,p_list,width = 0.5)
-	plt.title('Sequence Analysis')
+	plt.title('Analysis')
 
 	# x_major_locator = MultipleLocator(0.001)
 	# ax=plt.gca()
@@ -66,7 +66,7 @@ def picture(csv_path, out_path):
 	plt.yticks(fontsize = 7)
 
 	plt.ylabel('Sequence', fontsize=12)
-	plt.xlabel('Percentage(%)', fontsize=12)
+	plt.xlabel('Proportion(%)', fontsize=12)
 
 	for a, b in zip(p_list,loc_list):
 		plt.text(max(p_list), b , ('%.4f'%a), ha='center',fontsize=8)
