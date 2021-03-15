@@ -8,16 +8,19 @@ from flask import send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail,Message  # sending the emails
 
-from login.backend.pic_plot.plot_pic import picture
-from login.backend.script import execute_cmd
-from login.backend.send_email import send_email
+from pic_plot.plot_pic import picture
+from script import execute_cmd
+from send_email import send_email
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 uploadDir = os.path.join(basedir, 'upload')
 
 # Rpath, with packages installed
-Rscript_PATH = 'D:/R/R-4.0.4/bin'
+'''
+Note: Please enter your Rscript path here!!!
+'''
+Rscript_PATH = 'D:/R/R-4.0.4/bin/Rscript'
 # output path
 OUTPUT_PATH = os.path.join(basedir, 'output')
 
@@ -175,7 +178,7 @@ def upload_file():
                     return render_template('end_point.html', msg=error_msg)
                 create_email(email_list, filename)
                 save_email()
-                # Use R for csv and picture results
+                 # Use R for csv and picture results
                 csv_path = os.path.join(OUTPUT_PATH, 'r_output.csv')
                 pdf_path = os.path.join(OUTPUT_PATH, 'r_output.pdf')
                 picture(csv_path=csv_path, out_path=OUTPUT_PATH)
