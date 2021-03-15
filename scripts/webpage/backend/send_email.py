@@ -24,12 +24,17 @@ def get_type_file(path, key): # Get the output txt files
 
 def send_email(filelist, pic_path, receiver, content=None):
 	load()
+	print("*******************************")
+	print(filelist)
+	print(pic_path)
+	print(receiver)
+	print("*******************************")
 	smtpHost = 'smtp.163.com'
 	sendAddr = 'sars_cov2@163.com'
-	password = 'YTKPXXRKISOTASSV'
+	password = 'VNYQLYIXJVWJGMET'
 	subject = "SARS_COV2_WasteWater_Surveillance_Result"
 	content = content if content else "Here's the result."
-	receiver = receiver #lpipes@berkeley.edu
+	receiver = receiver #lpipes@berkeley.edu 
 
 	msg = MIMEMultipart()
 
