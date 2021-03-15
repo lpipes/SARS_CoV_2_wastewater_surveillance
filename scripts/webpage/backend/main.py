@@ -8,7 +8,7 @@ from flask import send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail,Message  # sending the emails
 
-from pic_plot.plot_pic import picture
+from pic_plot import picture
 from script import execute_cmd
 from send_email import send_email
 
