@@ -3,159 +3,176 @@
 <html lang="en">
 
 <head>
-	<title>Upload</title>
+    <title>Upload</title>
 
-	<meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
 
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}" />
-
-
-	<title>Upload Your Sequences</title>
-
-	<script type="text/javascript">
-
-		function UpladFile() {
-
-			var fileObj = document.getElementById("file").files[0]; // get file object
-
-			var api = "http://127.0.0.1:5000/upload";                    // backend address
-
-			// FormData object
-			console.log('----fileObj-------');
-			console.log(fileObj);
-
-			var fd = new FormData();
-	        fd.append("file", fileObj);
-
-			console.log('----send-------');
-			console.log(fd);
-			// XMLHttpRequest 
-
-			var xhr = new XMLHttpRequest();
-
-			xhr.open("post", api, true);
-
-			// xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded;charset=UTF-8");
-			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
-			
-			xhr.send(fd);
-			xhr.onload = function () {
-				alert("Successfully uploaded!");
-				window.location.reload();
-			};
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
 
 
-		}
+    <title>Upload Your Sequences</title>
 
-		function show() {
+    <script type="text/javascript">
 
-			var reader = new FileReader();
+        function UpladFile() {
 
-			reader.onload = function () {
+            var fileObj = document.getElementById("file").files[0]; // get file object
 
-				alert(this.result)
+            var api = "http://127.0.0.1:5000/upload";                    // backend address
 
-			}
+            // FormData object
+            console.log('----fileObj-------');
+            console.log(fileObj);
 
-			var f = document.getElementById("filePicker").files[0];
+            var fd = new FormData();
+            fd.append("file", fileObj);
 
-			reader.readAsText(f);
-		}
+            console.log('----send-------');
+            console.log(fd);
+            // XMLHttpRequest
 
-		// -----------------juedge the file format and preview------------------
-		function hideReviewer() {
-			var fileObj = document.getElementById("reviewerImg");
-			fileObj.style.display = "none";
-			var fileObj2 = document.getElementById("reviewer");
-			fileObj2.style.display = "none";
-		};
+            var xhr = new XMLHttpRequest();
 
-		function jsReadFiles(files) {
-			console.log('============');
-			console.log(files)
-			var fileObj = document.getElementById("reviewer");
-			fileObj.style.display = "block";
-			var fileObj2 = document.getElementById("reviewerImg");
-			fileObj2.style.display = "block";
-			if (files == '') {
-				return
-			}
-			if (files.length) {
-				var file = files[0];
-				console.log(file.type + '============');
-				var reader = new FileReader();
-				if (/text+/.test(file.type)) {//judge the format of the file(txt.)
-					reader.onload = function () {
-						console.log(this.result);
-						fileObj.innerText = this.result;
-					}
-					console.log('---------------');
-					console.log(this.result);
-					reader.readAsText(file);
-				} else {
-					alert('Not TXT, Please Reupload');
-				}
-			}
-		};
+            xhr.open("post", api, true);
 
-		// send an email
-		function send_email(){
-			console.log('-----press send email-----');
-			var xhr = new XMLHttpRequest();
-			var api = "http://127.0.0.1:5000/email_send_attach";
-			//var api = "http://127.0.0.1:5000/email_send_charactor";
-			xhr.open("get", api, true);
-			xhr.send();
-			alert('Send Email to users OK');
-		};
-	</script>
+            // xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded;charset=UTF-8");
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+
+            xhr.send(fd);
+            xhr.onload = function () {
+                alert("Successfully uploaded!");
+                window.location.reload();
+            };
+
+
+        }
+
+        function show() {
+
+            var reader = new FileReader();
+
+            reader.onload = function () {
+
+                alert(this.result)
+
+            }
+
+            var f = document.getElementById("filePicker").files[0];
+
+            reader.readAsText(f);
+        }
+
+        // -----------------juedge the file format and preview------------------
+        function hideReviewer() {
+            debugger
+            var fileObj = document.getElementById("reviewerImg");
+            fileObj.style.display = "block";
+            var fileObj2 = document.getElementById("reviewer");
+            fileObj2.style.display = "block";
+        };
+
+        function uploadFiles() {
+            document.getElementById("reviewer").innerText = '';
+            var file_name = document.getElementById("file").files[0].name;
+            document.getElementById("file_name").innerText = file_name;
+        }
+
+        function jsReadFiles() {
+            var files = document.getElementById("file").files;
+            if (files == '') {
+                return
+            }
+            var fileObj = document.getElementById("reviewer");
+            if (fileObj.innerText == '' && files.length) {
+                var file = files[0];
+                console.log(file.type + '============');
+                var reader = new FileReader();
+                if (/text+/.test(file.type)) {//judge the format of the file(txt.)
+                    reader.onload = function () {
+                        console.log(this.result);
+                        fileObj.innerText = this.result;
+                    }
+                    reader.readAsText(file);
+                } else {
+                    alert('Not TXT, Please Reupload');
+                }
+            } else if (fileObj.innerText != '') {
+                switch(fileObj.style.display) {
+                     case "block":
+                        fileObj.style.display = 'none'
+                        break;
+                     case 'none':
+                        fileObj.style.display = 'block'
+                        break;
+                }
+            }
+        };
+
+        // send an email
+        function send_email() {
+            console.log('-----press send email-----');
+            var xhr = new XMLHttpRequest();
+            var api = "http://127.0.0.1:5000/email_send_attach";
+            //var api = "http://127.0.0.1:5000/email_send_charactor";
+            xhr.open("get", api, true);
+            xhr.send();
+            alert('Send Email to users OK');
+        };
+
+
+    </script>
 
 </head>
 
 <body>
-	<div class="limiter">
-		{% block content %}
-		<div class="container">
-			<div class="wrap">
-				<div class="container-login-btn">
-					{% with messages = get_flashed_messages(with_categories=true) %}
-					{% if messages %}
-					{% for category, message in messages %}
-					{% if category in ["success","danger"] %}
-					<div class="alert alert-{{ category }}">
-						<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-						{{ message }}
-					</div>
-					{% endif %}
-					{% endfor %}
-					{% endif %}
-					{% endwith %}
-					<span class="form-title">Upload Now(.txt only)</span>
-					<input type="file" id="file" name="myfile" onchange="jsReadFiles(this.files)" />
-					<span onclick="jsReadFiles('');"
-						style="border: 1px solid #ccc;height: 24px;width: 53px;">Preview</span>
-					<div id="reviewer"></div>
-					<div id="reviewerImg" onclick="hideReviewer()"><img src="../static/cancel.png" alt=""></div>
-					<br></br>
-					<!-- <form action="upload" enctype="multipart/form-data" method="POST">
-						<input type="file" id="file" name="myfile" onchange="jsReadFiles(this.files)" />
-						<input class="login-form-btn" type="submit" onclick="UpladFile()" value="SUBMIT"/>
-					</form> -->
+<div class="limiter">
+    {% block content %}
+        <div class="container">
+            <div class="wrap">
+                <div class="container-login-btn">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                {% if category in ["success","danger"] %}
+                                    <div class="alert alert-{{ category }}">
+                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                                        </button>
+                                        {{ message }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <span class="form-title">Upload Now(.txt only)</span>
+                    <div class="file" id="filediv">
+                        <input type="file" id="file" name="myfile" onchange="uploadFiles()" style=" width: 70px;"/>
+                        <span class="file-upload">upload</span>
+                        <span id="file_name"></span>
+                    </div>
+                    <span onclick="jsReadFiles();"
+                          style="border: 1px solid #ccc;height: 24px;width: 53px;">Preview</span>
+                    <div id="reviewer" style="display:block;width: 100%;"></div>
+<!--                    <div id="reviewerImg" onclick="hideReviewer()"><img src="../static/Cancel.png" alt=""></div>-->
+                    <br/>
+                    <!-- <form action="upload" enctype="multipart/form-data" method="POST">
+                        <input type="file" id="file" name="myfile" onchange="jsReadFiles(this.files)" />
+                        <input class="login-form-btn" type="submit" onclick="UpladFile()" value="SUBMIT"/>
+                    </form> -->
 
-					<input class="login-form-btn" type="button" onclick="UpladFile()" value="SUBMIT" action="/upload" />
-					{% if imagename %}
-					<img src="{{ url_for('static',filename='uploads/'+imagename) }}" width="300px" height="300px" />
-					{% endif %}
-					<button id="sendEmail" onclick="send_email()">SendEmail</button>
-				</div>
-			</div>
-		</div>
-		{% endblock %}
-	</div>
+                    <input class="login-form-btn" type="button" onclick="UpladFile()" value="SUBMIT" action="/upload"/>
+                    {% if imagename %}
+                        <img src="{{ url_for('static',filename='uploads/'+imagename) }}" width="300px" height="300px"/>
+                    {% endif %}
+                    <!-- <button id="sendEmail" onclick="send_email()">SendEmail</button> -->
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+</div>
 
 </body>
 
