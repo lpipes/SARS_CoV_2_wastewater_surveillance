@@ -11,6 +11,11 @@ typedef struct Options{
 	char outfile[1000];
 	int remove_identical;
 	char variant[1000];
+	int paired;
+	char single_end_file[1000];
+	char forward_end_file[1000];
+	char reverse_end_file[1000];
+	char bowtie_reference_db[1000];
 }Options;
 
 typedef struct blob{

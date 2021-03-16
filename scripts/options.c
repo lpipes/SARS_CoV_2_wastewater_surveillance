@@ -9,6 +9,11 @@ static struct option long_options[]=
 	{"outfile", required_argument, 0, 'o'},
 	{"variant_sites", required_argument, 0, 'v'},
 	{"remove_identical", no_argument, 0, 'r'},
+	{"paired", no_argument, 0, 'p'},
+	{"single_end", required_argument, 0, '0'},
+	{"forward_read", required_argument, 0, '1'},
+	{"reverse_read", required_argument, 0, '2'},
+	{"bowtie-db", required_argument, 0, 'd'},
 	{0,0,0,0}
 };
 
@@ -20,7 +25,11 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-f, --freq [REQUIRED]			allele frequency to filter\n\
 	-o, --outfile [REQUIRED]		outfile\n\
 	-v, --variant_sites [REQUIRED]		variant sites file\n\
-	-r, --remove_identical			remove identical sequences\n\
+	-p, --paired				paired-reads\n\
+	-0, --single_end_file [REQUIRED]	single-end fasta\n\
+	-1, --forward_file [REQUIRED]		forward fasta\n\
+	-2, --reverse_file [REQUIRED]		reverse fasta\n\
+	-d, --bowtie-db [REQUIRED]		bowtie db\n\
 	\n";
 
 void print_help_statement(){
@@ -36,15 +45,23 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hri:s:f:o:v:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpri:s:f:o:v:0:1:2:d:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
 				print_help_statement();
 				exit(0);
 				break;
+			case 'd':
+				success = sscanf(optarg, "%s", opt->bowtie_reference_db);
+				if (!success)
+					fprintf(stderr, "Invalid bowtie db\n");
+				break;
 			case 'r':
 				opt->remove_identical=1;
+				break;
+			case 'p':
+				opt->paired=1;
 				break;
 			case 'i':
 				success = sscanf(optarg, "%s", opt->fasta);
@@ -55,6 +72,21 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->sam);
 				if (!success)
 					fprintf(stderr, "Invalid sam file\n");
+				break;
+			case '0':
+				success = sscanf(optarg, "%s", opt->single_end_file);
+				if (!success)
+					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case '1':
+				success = sscanf(optarg, "%s", opt->forward_end_file);
+				if (!success)
+					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case '2':
+				success = sscanf(optarg, "%s", opt->reverse_end_file);
+				if (!success)
+					fprintf(stderr, "Invalid fasta file\n");
 				break;
 			case 'f':
 				success = sscanf(optarg, "%lf", &(opt->freq));
