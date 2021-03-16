@@ -934,4 +934,9 @@ int main(int argc, char **argv){
 	}
 	free(names_of_strains);
 	free(MSA);
+	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
+	memset(buffer,'\0',FASTA_MAXLINE);
+	sprintf(buffer,"Rscript EM.R %s",opt.outfile);
+	system(buffer);
+	free(buffer);
 }
