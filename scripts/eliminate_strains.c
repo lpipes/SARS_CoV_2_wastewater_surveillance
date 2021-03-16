@@ -796,6 +796,7 @@ int main(int argc, char **argv){
 	Options opt;
 	opt.remove_identical=0;
 	opt.paired=0;
+	opt.error=0.005;
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
@@ -936,7 +937,7 @@ int main(int argc, char **argv){
 	free(MSA);
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	sprintf(buffer,"Rscript EM.R %s",opt.outfile);
+	sprintf(buffer,"Rscript EM.R %s %lf",opt.outfile,opt.error);
 	system(buffer);
 	free(buffer);
 }

@@ -14,6 +14,7 @@ static struct option long_options[]=
 	{"forward_read", required_argument, 0, '1'},
 	{"reverse_read", required_argument, 0, '2'},
 	{"bowtie-db", required_argument, 0, 'd'},
+	{"EM-error",required_argument,0, 'e'},
 	{0,0,0,0}
 };
 
@@ -30,6 +31,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-1, --forward_file [REQUIRED]		forward fasta\n\
 	-2, --reverse_file [REQUIRED]		reverse fasta\n\
 	-d, --bowtie-db [REQUIRED]		bowtie db\n\
+	-e, --EM-error [REQUIRED]		error rate for EM\n\
 	\n";
 
 void print_help_statement(){
@@ -45,7 +47,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hpri:s:f:o:v:0:1:2:d:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpri:s:f:o:v:0:1:2:d:e:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -92,6 +94,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%lf", &(opt->freq));
 				if (!success)
 					fprintf(stderr, "Invalid freq\n");
+				break;
+			case 'e':
+				success = sscanf(optarg, "%lf", &(opt->error));
+				if (!success)
+					fprintf(stderr, "Invalid error rate\n");
 				break;
 			case 'o':
 				success = sscanf(optarg, "%s", opt->outfile);
