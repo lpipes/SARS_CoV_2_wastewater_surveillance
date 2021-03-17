@@ -103,7 +103,7 @@ p.one <- rep(0, k)
 p.one[which.max(loglikelihoods)] <- 1
 uni.like <- unique(loglikelihoods)
 if (length(uni.like)!=length(loglikelihoods)){
-  r_file = file(paste0("Unidentifiable Strains_",args[1],".txt"), "w")
+  r_file = file(paste0("Unidentifiable_Strains_",args[1],".txt"), "w")
   unident <- 0
   for (i in uni.like){
     if (sum(loglikelihoods==i)>1){
