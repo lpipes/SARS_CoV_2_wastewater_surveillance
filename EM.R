@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
 # Commands [mismatch matrix](.txt) [error rate](default = 0.005)
-# library(turboEM)
 library(Matrix)
 library(plyr)
 library(data.table)
@@ -29,15 +28,15 @@ if (!file.exists(args[1])) {
 
 # Read in data
 ptm <- proc.time()
-data <- read.table(args[1], header = T,sep = "\t")
+data <- read.table(args[1], header = T, sep = "\t")
 cat("Loading matrices in from file", (proc.time() - ptm)[3])
 
-if (nrow(data)<20){
+if (nrow(data) < 20) {
   print("Not enough reads!")
   quit()
 }
 
-args[1] <- gsub(".txt","",args[1],fixed = T)
+args[1] <- gsub(".txt", "", args[1], fixed = T)
 
 ptm <- proc.time()
 strains <- colnames(data[, 3:ncol(data)])
@@ -61,7 +60,7 @@ if (length(args) == 1) {
   quit()
 } else {
   error <- as.numeric(args[2])
-  if (error<0.001 | error >1) {
+  if (error < 0.001 | error > 1) {
     print("\nError rate should be smaller than 0.01 or larger than 1!")
     quit()
   }
@@ -75,14 +74,16 @@ ptm <- proc.time()
 #-------------------------------------SQUAREM---------------------
 # objective function
 logL <- function(p, y) {
-  return(sum(log(colSums(t(y) * p))))
+  return(sum(log(colSums(t(y+1e-20) * p))))
 }
-#objective function for SQUAREM
-neg.logL <- function(p, y) return((-logL(p,y)))
+# objective function for SQUAREM
+neg.logL <- function(p, y) {
+  return((-logL(p, y)))
+}
 
 # Update Function
 EM <- function(p, y) {
-  w <- t(t(y) * p) # numerator of Eq.12 in Malone's paper
+  w <- t(t(y+1e-20) * p) # numerator of Eq.12 in Malone's paper
   E_step <- w / rowSums(w) # denominator of Eq.12 in Malone's paper (normalization of rows)
   # return(colSums(E_step)/nrow(y))# M-step to compute p, Eq.33
   return(colMeans(E_step))
@@ -102,48 +103,52 @@ loglikelihoods <- colSums(log(Q))
 p.one <- rep(0, k)
 p.one[which.max(loglikelihoods)] <- 1
 uni.like <- unique(loglikelihoods)
-if (length(uni.like)!=length(loglikelihoods)){
-  r_file = file(paste0("Unidentifiable_Strains_",args[1],".txt"), "w")
+if (length(uni.like) != length(loglikelihoods)) {
+  r_file <- file(paste0("Unidentifiable_Strains_", args[1], ".txt"), "w")
   unident <- 0
-  for (i in uni.like){
-    if (sum(loglikelihoods==i)>1){
-      tmp <- which(loglikelihoods==i)
-      #The first two column of d_mtx aren't mismatch number
-      d_tmp <- unique(as.matrix(d_mtx[,tmp]),MARGIN = 2)
-      if (ncol(d_tmp)<length(tmp)){
-        for (j in 1:ncol(d_tmp)){
-          unident.names <- colnames(d_mtx[,tmp])[apply(d_mtx[,tmp], 2, identical,y=d_tmp[,j])]
-          if (length(unident.names)>1){
-            unident <- unident+1
-            write(paste0("Group ",unident,":"),file = r_file,append = T)
-            write(unident.names,file = r_file,append = T)
+  for (i in uni.like) {
+    if (sum(loglikelihoods == i) > 1) {
+      tmp <- which(loglikelihoods == i)
+      # The first two column of d_mtx aren't mismatch number
+      d_tmp <- unique(as.matrix(d_mtx[, tmp]), MARGIN = 2)
+      if (ncol(d_tmp) < length(tmp)) {
+        for (j in 1:ncol(d_tmp)) {
+          unident.names <- colnames(d_mtx[, tmp])[apply(d_mtx[, tmp], 2, identical, y = d_tmp[, j])]
+          if (length(unident.names) > 1) {
+            unident <- unident + 1
+            write(paste0("Group ", unident, ":"), file = r_file, append = T)
+            write(unident.names, file = r_file, append = T)
             Q.index <- which(colnames(Q) %in% unident.names)
-            colnames(Q)[Q.index[1]] <- paste0("Group ",unident)
-            Q <- as.matrix(Q[,-Q.index[-1]])
+            colnames(Q)[Q.index[1]] <- paste0("Group ", unident)
+            Q <- as.matrix(Q[, -Q.index[-1]])
           }
         }
       }
     }
   }
   close(r_file)
-  if(ncol(Q)==1){
+  if (ncol(Q) == 1) {
     colnames(Q) <- "Group 1"
   }
 }
-cat("\nTime cost for finding unidentifiable strains: ",(proc.time()-ptm)[3])
+cat("\nTime cost for finding unidentifiable strains: ", (proc.time() - ptm)[3])
 
 # EM Algorithm
-p0 = colSums(Q)
-p0 = p0 / sum(p0)
-options(digits=13)
+p0 <- colSums(Q)
+p0 <- p0 / sum(p0)
+options(digits = 13)
 
 # cl.cores = detectCores(logical = F)
 # cl <- makeCluster(cl.cores)
 # registerDoParallel(cl,cores = cl.cores)
 
-res = turboem(par=p0, fixptfn=EM, objfn=neg.logL, method="squarem", y=Q, parallel = F,
-              control.run = list(convtype = "objfn",tol = 1.0e-7,
-                                 stoptype = "maxtime",maxtime = 10000))
+res <- turboem(
+  par = p0, fixptfn = EM, objfn = neg.logL, method = "squarem", y = Q, parallel = F,
+  control.run = list(
+    convtype = "objfn", tol = 1.0e-7,
+    stoptype = "maxtime", maxtime = 10000
+  )
+)
 
 p <- pars(res)
 p <- round.output(p)
@@ -153,10 +158,10 @@ cat("\nSQUAREM algorithm ", (proc.time() - ptm)[3])
 
 # One Strain
 loglikelihoods <- colSums(log(Q))
-cat("\nAssuming only one strain: ", colnames(n_mtx)[loglikelihoods==max(loglikelihoods)],sep = "\n")
-p.one <- rep(0, k)
+cat("\nAssuming only one strain: ", colnames(n_mtx)[loglikelihoods == max(loglikelihoods)], sep = "\n")
+p.one <- rep(0, ncol(Q))
 p.one[which.max(loglikelihoods)] <- 1
-cat("\nlog(Likelihood of multiple strains/Likelihood of one strain): ", logL(p, Q) - logL(p.one, Q),"\n")
+cat("\nlog(Likelihood of multiple strains/Likelihood of one strain): ", logL(p, Q) - logL(p.one, Q), "\n")
 
 par(mar = c(13, 4, 4, 1))
 names.arg <- colnames(Q)
