@@ -42,11 +42,12 @@ void setNumStrains(FILE* MSA_file, int* strain_info){
 	strain_info[1]=maxname;
 }
 
-void readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
+int readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
 	char buffer [FASTA_MAXLINE];
 	int i=0;
 	int index=-1;
 	int found_ref=0;
+	int ref_index = 0;
 	while( fgets(buffer,FASTA_MAXLINE,MSA_file) != NULL ){
 		if (buffer[0] == '>'){
 			index++;
@@ -78,10 +79,11 @@ void readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names,
 				}else if (buffer[i]=='-'){
 					MSA[index][i]='-';
 				}else{
-					MSA[index][i]=-1;
+					MSA[index][i]='\0';
 				}
 			}
 			if (found_ref==1){
+				ref_index=index;
 				int placement = 0;
 				for(i=0; i<length_of_MSA; i++){
 					if ( MSA[index][i] != '-' ){
@@ -93,6 +95,7 @@ void readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names,
 			}
 		}
 	}
+	return ref_index;
 }
 
 void imputeNucMat(int number_of_strains, int length_of_MSA, int** MSA, int* imputation){
@@ -243,7 +246,6 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int* reference, int l
 			}
 			//printf("%s\n",cigar_string);
 			free(copy);
-			free(cigar_string);
 			//printf("S: %s\n",buffer_copy);
 			s = strtok(buffer_copy,"\t");
 			//printf("S: %s\n",s);
@@ -263,7 +265,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int* reference, int l
 				//printf("cigar[%d]=%d\n",i,cigar[i]);
 				for(j=0; j<cigar[i]; j++){
 					//printf("cigar_chars[%d]: %c\n",i,cigar_chars[i]);
-					if ( cigar_chars[i] == 'M' ){
+					if ( cigar_chars[i] == 'M' || cigar_chars[i] == 'I'){
 						if (sequence[j+start]=='A' || sequence[j+start]=='a' ){
 							allele[reference[j+start_ref+position]][0]++;
 						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
@@ -286,8 +288,9 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int* reference, int l
 					start_ref = cigar[i] + start_ref;
 				}
 			}
-			free(buffer_copy);
 			}
+			free(buffer_copy);
+			free(cigar_string);
 		}
 	}
 	for(i=0; i<length_of_MSA; i++){
@@ -399,13 +402,21 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 				for(j=0; j<cigar[i]; j++){
 					if( cigar_chars[i] == 'M' ){
 						if (sequence[j+start]=='A' || sequence[j+start]=='a' ){
-							allele[reference[j+start_ref+position]][0]++;
-						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
-							allele[reference[j+start_ref+position]][1]++;
+							if ( reference[j+start_ref+position] < length_of_MSA ){
+								allele[reference[j+start_ref+position]][0]++;
+							}
+						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g' ){
+							if ( reference[j+start_ref+position] < length_of_MSA ){
+								allele[reference[j+start_ref+position]][1]++;
+							}
 						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c'){
-							allele[reference[j+start_ref+position]][2]++;
+							if ( reference[j+start_ref+position] < length_of_MSA ){
+								allele[reference[j+start_ref+position]][2]++;
+							}
 						}else if (sequence[j+start]=='T' || sequence[j+start]=='t'){
-							allele[reference[j+start_ref+position]][3]++;
+							if ( reference[j+start_ref+position] < length_of_MSA ){
+								allele[reference[j+start_ref+position]][3]++;
+							}
 						}
 					}
 				}
@@ -575,7 +586,6 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 					number_of_mismatches[i] = 0;
 				}
 			}
-			free(buffer_copy);
 			if (decimal != -1){
 			for(i=0; i<number_of_strains_remaining; i++){
 				start=0;
@@ -584,20 +594,65 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 						for(k=0; k<cigar[j]; k++){
 							if ( cigar_chars[j] == 'M' ){
 								if ( sequence[k+start] == 'A' || sequence[k+start] == 'a'){
-									if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-										number_of_mismatches[i]++;
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
+											number_of_mismatches[i]++;
+										}
 									}
 								}else if ( sequence[k+start] == 'G' || sequence[k+start] == 'g'){
-									if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-										number_of_mismatches[i]++;
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
+											number_of_mismatches[i]++;
+										}
 									}
 								}else if ( sequence[k+start] == 'C' || sequence[k+start] == 'c'){
-									if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
+											number_of_mismatches[i]++;
+										
+									}}
+								}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
+											number_of_mismatches[i]++;
+										}
+									}
+								}
+							}
+							if ( cigar_chars[j] == 'D' ){
+								if ( reference[k+position+start_ref] < length_of_MSA){
+									if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
 										number_of_mismatches[i]++;
 									}
-								}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't'){
-									if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-										number_of_mismatches[i]++;
+								}
+							}
+							if ( cigar_chars[j] == 'I' ){
+								if ( sequence[k+start] == 'A' || sequence[k+start] == 'a'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A'){
+											number_of_mismatches[i]++;
+										}
+									}
+								}
+								if ( sequence[k+start] == 'G' || sequence[k+start] == 'g'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G'){
+											number_of_mismatches[i]++;
+										}
+									}
+								}
+								if ( sequence[k+start] == 'C' || sequence[k+start] == 'c'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C'){
+											number_of_mismatches[i]++;
+										}
+									}
+								}
+								if ( sequence[k+start] == 'T' || sequence[k+start] == 't'){
+									if ( reference[k+position+start_ref] < length_of_MSA){
+										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T'){
+											number_of_mismatches[i]++;
+										}
 									}
 								}
 							}
@@ -605,15 +660,18 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 						if (cigar_chars[j] == 'M'){
 							start = cigar[j]+start;
 							start_ref = cigar[j]+start_ref;
-							if (i==0){
-								alignment_size = alignment_size + cigar[j];
-							}
+							//if (i==0){
+							//	alignment_size = alignment_size + cigar[j];
+							//}
 						}
 						if (cigar_chars[j] == 'I'){
 							start = cigar[j] + start;
 						}
 						if (cigar_chars[j] == 'D'){
 							start_ref = cigar[j] + start_ref;
+						}
+						if (i==0){
+							alignment_size = alignment_size + cigar[j];
 						}
 					}
 			}
@@ -625,6 +683,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 				}
 				fprintf(outfile,"\n");
 			}
+			free(buffer_copy);
 		}
 	}
 	free(number_of_mismatches);
@@ -729,20 +788,28 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains
 					for(k=0; k<cigar[j]; k++){
 						if (cigar_chars[j] == 'M' ){
 							if ( sequence[k+start] == 'A' || sequence[k+start] == 'a' ){
-								if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-									number_of_mismatches[i]++;
+								if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-' ){
+									if ( reference[k+start_ref+position] < length_of_MSA ){
+										number_of_mismatches[i]++;
+									}
 								}
 							}else if ( sequence[k+start] == 'G' || sequence[k+start] == 'g' ){
 								if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-									number_of_mismatches[i]++;
+									if ( reference[k+start_ref+position] < length_of_MSA ){
+										number_of_mismatches[i]++;
+									}
 								}
 							}else if ( sequence[k+start] == 'C' || sequence[k+start] == 'c' ){
-								if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-' ){
-									number_of_mismatches[i]++;
+								if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
+									if ( reference[k+start_ref+position] < length_of_MSA ){
+										number_of_mismatches[i]++;
+									}
 								}
 							}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't' ){
 								if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-									number_of_mismatches[i]++;
+									if ( reference[k+start_ref+position] < length_of_MSA ){
+										number_of_mismatches[i]++;
+									}
 								}
 							}
 						}
@@ -789,6 +856,25 @@ int* readVariantSitesFile(FILE* variant_sites_file, int* number_of_sites){
 		}
 	}
 	return variant_sites;
+}
+
+int findEndOfPolyA(char **MSA, int length_of_MSA, int ref_index, int* reference){
+	int i;
+	int length_of_ref = 0;
+	int end_of_polyA=reference[length_of_ref-1];
+	for(i=0; i<length_of_MSA; i++){
+		if ( reference[i] == -1 ){
+			length_of_ref=i;
+			break;
+		}
+	}
+	for(i=length_of_ref-2; i>=0; i--){
+		if ( MSA[ref_index][reference[i]] != 'A' ){
+			end_of_polyA = reference[i];
+			break;
+		}
+	}
+	return end_of_polyA;
 }
 
 int main(int argc, char **argv){
@@ -847,8 +933,14 @@ int main(int argc, char **argv){
 	printf("Reading in MSA...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
 	if (( MSA_file = fopen(opt.fasta,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
-	readInMSA(MSA_file,MSA,allele_max,names_of_strains,reference,length_of_MSA);
+	int ref_index = readInMSA(MSA_file,MSA,allele_max,names_of_strains,reference,length_of_MSA);
 	fclose(MSA_file);
+	for(i=0; i<length_of_MSA; i++){
+		free(allele_max[i]);
+	}
+	free(allele_max);
+	int end_of_polyA = findEndOfPolyA(MSA,length_of_MSA,ref_index,reference);
+	length_of_MSA = end_of_polyA;
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	//int* imputation = (int *)malloc(length_of_MSA*sizeof(int));
@@ -905,6 +997,7 @@ int main(int argc, char **argv){
 		free(allele_frequency[i]);
 	}
 	free(allele_frequency);
+	free(identical);
 	int* strains_kept = (int *)malloc(number_of_strains_remaining*sizeof(int));
 	int placement=0;
 	for(i=0; i<number_of_strains; i++){
@@ -929,6 +1022,7 @@ int main(int argc, char **argv){
 	printf("Took %.5fseconds\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	free(strains_kept);
 	free(reference);
+	free(variant_sites);
 	for(i=0; i<number_of_strains; i++){
 		free(names_of_strains[i]);
 		free(MSA[i]);
