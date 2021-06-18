@@ -939,8 +939,8 @@ int main(int argc, char **argv){
 		free(allele_max[i]);
 	}
 	free(allele_max);
-	int end_of_polyA = findEndOfPolyA(MSA,length_of_MSA,ref_index,reference);
-	length_of_MSA = end_of_polyA;
+	//int end_of_polyA = findEndOfPolyA(MSA,length_of_MSA,ref_index,reference);
+	//length_of_MSA = end_of_polyA;
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	//int* imputation = (int *)malloc(length_of_MSA*sizeof(int));
