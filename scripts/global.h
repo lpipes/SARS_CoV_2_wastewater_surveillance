@@ -17,6 +17,7 @@ typedef struct Options{
 	char reverse_end_file[1000];
 	char bowtie_reference_db[1000];
 	double error;
+	char reference[1000];
 }Options;
 
 typedef struct blob{

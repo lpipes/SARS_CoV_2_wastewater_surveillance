@@ -42,7 +42,7 @@ void setNumStrains(FILE* MSA_file, int* strain_info){
 	strain_info[1]=maxname;
 }
 
-int readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
+int readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, int length_of_MSA){
 	char buffer [FASTA_MAXLINE];
 	int i=0;
 	int index=-1;
@@ -84,13 +84,13 @@ int readInMSA(FILE* MSA_file, char** MSA, int** allele_frequency, char** names, 
 			}
 			if (found_ref==1){
 				ref_index=index;
-				int placement = 0;
+				/*int placement = 0;
 				for(i=0; i<length_of_MSA; i++){
 					if ( MSA[index][i] != '-' ){
 						reference[placement] = i;
 						placement++;
 					}
-				}
+				}*/
 				found_ref=0;
 			}
 		}
@@ -858,6 +858,15 @@ int* readVariantSitesFile(FILE* variant_sites_file, int* number_of_sites){
 	return variant_sites;
 }
 
+void readReferencePositionsFile(FILE* file, int* reference){
+	char buffer[20];
+	int placement=0;
+	while( fgets(buffer,20,file) != NULL){
+		reference[placement]=atoi(buffer);
+		placement++;
+	}
+}
+
 int findEndOfPolyA(char **MSA, int length_of_MSA, int ref_index, int* reference){
 	int i;
 	int length_of_ref = 0;
@@ -930,10 +939,14 @@ int main(int argc, char **argv){
 	for(i=0; i<length_of_MSA; i++){
 		reference[i] = -1;
 	}
+	FILE* reference_file;
+	if (( reference_file = fopen(opt.reference,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	readReferencePositionsFile(reference_file,reference);
+	fclose(reference_file);
 	printf("Reading in MSA...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
 	if (( MSA_file = fopen(opt.fasta,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
-	int ref_index = readInMSA(MSA_file,MSA,allele_max,names_of_strains,reference,length_of_MSA);
+	int ref_index = readInMSA(MSA_file,MSA,allele_max,names_of_strains,length_of_MSA);
 	fclose(MSA_file);
 	for(i=0; i<length_of_MSA; i++){
 		free(allele_max[i]);

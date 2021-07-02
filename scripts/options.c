@@ -15,6 +15,7 @@ static struct option long_options[]=
 	{"reverse_read", required_argument, 0, '2'},
 	{"bowtie-db", required_argument, 0, 'd'},
 	{"EM-error",required_argument,0, 'e'},
+	{"reference",required_argument,0,'r'},
 	{0,0,0,0}
 };
 
@@ -32,6 +33,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-2, --reverse_file [REQUIRED]		reverse fasta\n\
 	-d, --bowtie-db [REQUIRED]		bowtie db\n\
 	-e, --EM-error [REQUIRED]		error rate for EM\n\
+	-r, --reference [REQUIRED]		reference positions file\n\
 	\n";
 
 void print_help_statement(){
@@ -47,7 +49,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hpri:s:f:o:v:0:1:2:d:e:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpr:i:s:f:o:v:0:1:2:d:e:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -58,9 +60,6 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->bowtie_reference_db);
 				if (!success)
 					fprintf(stderr, "Invalid bowtie db\n");
-				break;
-			case 'r':
-				opt->remove_identical=1;
 				break;
 			case 'p':
 				opt->paired=1;
@@ -79,6 +78,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->single_end_file);
 				if (!success)
 					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case 'r':
+				success = sscanf(optarg, "%s", opt->reference);
+				if (!success)
+					fprintf(stderr, "Invalid file\n");
 				break;
 			case '1':
 				success = sscanf(optarg, "%s", opt->forward_end_file);
