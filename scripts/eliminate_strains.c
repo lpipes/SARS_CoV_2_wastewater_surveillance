@@ -402,18 +402,18 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 				for(j=0; j<cigar[i]; j++){
 					if( cigar_chars[i] == 'M' ){
 						if (sequence[j+start]=='A' || sequence[j+start]=='a' ){
-							if ( reference[j+start_ref+position] < length_of_MSA ){
+							if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 								allele[reference[j+start_ref+position]][0]++;
 							}
-						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g' ){
+						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g' && reference[j+start_ref+position] != -1){
 							if ( reference[j+start_ref+position] < length_of_MSA ){
 								allele[reference[j+start_ref+position]][1]++;
 							}
-						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c'){
+						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c' && reference[j+start_ref+position] != -1){
 							if ( reference[j+start_ref+position] < length_of_MSA ){
 								allele[reference[j+start_ref+position]][2]++;
 							}
-						}else if (sequence[j+start]=='T' || sequence[j+start]=='t'){
+						}else if (sequence[j+start]=='T' || sequence[j+start]=='t' && reference[j+start_ref+position] != -1){
 							if ( reference[j+start_ref+position] < length_of_MSA ){
 								allele[reference[j+start_ref+position]][3]++;
 							}
@@ -594,24 +594,24 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 						for(k=0; k<cigar[j]; k++){
 							if ( cigar_chars[j] == 'M' ){
 								if ( sequence[k+start] == 'A' || sequence[k+start] == 'a'){
-									if ( reference[k+position+start_ref] < length_of_MSA){
+									if ( reference[k+position+start_ref] < length_of_MSA && reference[k+position+start_ref] != -1){
 										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
 											number_of_mismatches[i]++;
 										}
 									}
-								}else if ( sequence[k+start] == 'G' || sequence[k+start] == 'g'){
+								}else if ( sequence[k+start] == 'G' || sequence[k+start] == 'g' && reference[k+position+start_ref] != -1){
 									if ( reference[k+position+start_ref] < length_of_MSA){
 										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
 											number_of_mismatches[i]++;
 										}
 									}
-								}else if ( sequence[k+start] == 'C' || sequence[k+start] == 'c'){
+								}else if ( sequence[k+start] == 'C' || sequence[k+start] == 'c' && reference[k+position+start_ref] != -1){
 									if ( reference[k+position+start_ref] < length_of_MSA){
 										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
 											number_of_mismatches[i]++;
 										
 									}}
-								}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't'){
+								}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't' && reference[k+position+start_ref] != -1){
 									if ( reference[k+position+start_ref] < length_of_MSA){
 										if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T' /*&& MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'*/){
 											number_of_mismatches[i]++;
@@ -620,7 +620,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 								}
 							}
 							if ( cigar_chars[j] == 'D' ){
-								if ( reference[k+position+start_ref] < length_of_MSA){
+								if ( reference[k+position+start_ref] < length_of_MSA && reference[k+position+start_ref] != -1){
 									if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
 										number_of_mismatches[i]++;
 									}
@@ -628,27 +628,27 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 							}
 							if ( cigar_chars[j] == 'I' ){
 								if ( sequence[k+start] == 'A' || sequence[k+start] == 'a'){
-									if ( reference[k+position+start_ref] < length_of_MSA){
+									if ( reference[k+position+start_ref] < length_of_MSA && reference[k+position+start_ref] != -1){
 										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A'){
 											number_of_mismatches[i]++;
 										}
 									}
 								}
 								if ( sequence[k+start] == 'G' || sequence[k+start] == 'g'){
-									if ( reference[k+position+start_ref] < length_of_MSA){
+									if ( reference[k+position+start_ref] < length_of_MSA && reference[k+position+start_ref] != -1){
 										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G'){
 											number_of_mismatches[i]++;
 										}
 									}
 								}
 								if ( sequence[k+start] == 'C' || sequence[k+start] == 'c'){
-									if ( reference[k+position+start_ref] < length_of_MSA){
+									if ( reference[k+position+start_ref] < length_of_MSA && reference[k+position+start_ref] != -1){
 										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C'){
 											number_of_mismatches[i]++;
 										}
 									}
 								}
-								if ( sequence[k+start] == 'T' || sequence[k+start] == 't'){
+								if ( sequence[k+start] == 'T' || sequence[k+start] == 't' && reference[k+position+start_ref] != -1){
 									if ( reference[k+position+start_ref] < length_of_MSA){
 										if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T'){
 											number_of_mismatches[i]++;
