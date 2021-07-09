@@ -266,13 +266,13 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int* reference, int l
 				for(j=0; j<cigar[i]; j++){
 					//printf("cigar_chars[%d]: %c\n",i,cigar_chars[i]);
 					if ( cigar_chars[i] == 'M' || cigar_chars[i] == 'I'){
-						if (sequence[j+start]=='A' || sequence[j+start]=='a' ){
+						if (sequence[j+start]=='A' || sequence[j+start]=='a' && reference[j+start_ref+position] != -1 ){
 							allele[reference[j+start_ref+position]][0]++;
-						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
+						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g' && reference[j+start_ref+position] != -1){
 							allele[reference[j+start_ref+position]][1]++;
-						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c'){
+						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c' && reference[j+start_ref+position] != -1){
 							allele[reference[j+start_ref+position]][2]++;
-						}else if (sequence[j+start]=='T' || sequence[j+start]=='t'){
+						}else if (sequence[j+start]=='T' || sequence[j+start]=='t' && reference[j+start_ref+position] != -1){
 							allele[reference[j+start_ref+position]][3]++;
 						}
 					}
@@ -405,16 +405,16 @@ int calculateAlleleFreq(FILE* sam, double** allele, int* reference, int length_o
 							if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 								allele[reference[j+start_ref+position]][0]++;
 							}
-						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g' && reference[j+start_ref+position] != -1){
-							if ( reference[j+start_ref+position] < length_of_MSA ){
+						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
+							if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 								allele[reference[j+start_ref+position]][1]++;
 							}
-						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c' && reference[j+start_ref+position] != -1){
-							if ( reference[j+start_ref+position] < length_of_MSA ){
+						}else if ( sequence[j+start]=='C' || sequence[j+start]=='c'){
+							if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 								allele[reference[j+start_ref+position]][2]++;
 							}
-						}else if (sequence[j+start]=='T' || sequence[j+start]=='t' && reference[j+start_ref+position] != -1){
-							if ( reference[j+start_ref+position] < length_of_MSA ){
+						}else if (sequence[j+start]=='T' || sequence[j+start]=='t'){
+							if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 								allele[reference[j+start_ref+position]][3]++;
 							}
 						}
