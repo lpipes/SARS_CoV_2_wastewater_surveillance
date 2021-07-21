@@ -12,8 +12,8 @@ library(arrow)
 library(turboEM)
 library(ggplot2)
 library(stringr)
-library(parallel)
-library(doParallel)
+# library(parallel)
+# library(doParallel)
 
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -39,9 +39,42 @@ if (nrow(data) < 20) {
 args[1] <- gsub(".txt", "", args[1], fixed = T)
 
 ptm <- proc.time()
-strains <- colnames(data[, 3:ncol(data)])
+strains <- colnames(data)[3:ncol(data)]
 names(strains) <- strains
 k <- ncol(data) - 2 # number of viral strains
+
+if (k==1){
+  par(mar = c(13, 4, 4, 1))
+  names.arg <- strains
+  em_output_df <- cbind(1, names.arg)
+  em_output_df <- data.frame(em_output_df)
+  colnames(em_output_df) <- c("p", "names.arg")
+  
+  write.csv(em_output_df, file = paste("./em_output_", args[1], ".csv", sep = ""))
+  
+  # d <- data.table(em_output_df, key="p")
+  d <- data.frame(1, names.arg)
+  colnames(d)[1] <- "p"
+  
+  pdf(file = paste("./proportion_plot_", args[1], ".pdf", sep = ""), width = 15, height = 10)
+  ggplot(data = d, mapping = aes(x = p, y = reorder(names.arg, p))) +
+    geom_bar(stat = "identity", fill = "lightblue") +
+    labs(x = "Proportion", y = NULL) +
+    geom_text(aes(label = p, vjust = 0.45, hjust = 0)) +
+    theme(
+      axis.text.y = element_text(size = 11),
+      plot.title = element_text(
+        size = 15,
+        hjust = 0.4
+      )
+    ) +
+    labs(title = "Viral Strains Estimation") +
+    xlim(c(0, 1))
+  # barplot(as.numeric(d$p), beside = T, xlab = "proportion", names.arg=d[["names.arg"]],
+  #         cex.names=0.8, las=2, main='Viral strains estimation',horiz = T,
+  #         xlim = c(0,max(p)+0.1),col = "lightblue")
+  dev.off()
+} else{
 
 # Mismatch matrix
 d_mtx <- data[, 3:ncol(data)]
@@ -195,3 +228,4 @@ ggplot(data = d, mapping = aes(x = p, y = reorder(names.arg, p))) +
 #         cex.names=0.8, las=2, main='Viral strains estimation',horiz = T,
 #         xlim = c(0,max(p)+0.1),col = "lightblue")
 dev.off()
+}
