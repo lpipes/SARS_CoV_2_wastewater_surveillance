@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <zlib.h>
 #include "global_filter.h"
 #include "hashmap.h"
 #include <string.h>
 
-int setMSALength(FILE* MSA_file){
+int setMSALength(gzFile MSA_file){
 	char buffer [FASTA_MAXLINE];
 	int length = 0;
 	int i=0;
 	int iter=0;
-	while( fgets(buffer,FASTA_MAXLINE,MSA_file) != NULL ){
+	while( gzgets(MSA_file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] != '>'){
 			for(i=0; buffer[i]!='\0'; i++){
 				length++;
@@ -24,12 +25,12 @@ int setMSALength(FILE* MSA_file){
 	return length;
 }
 
-void setNumStrains(FILE* MSA_file, int* strain_info){
+void setNumStrains(gzFile MSA_file, int* strain_info){
 	char buffer [FASTA_MAXLINE];
 	int i=0;
 	int numstrains=0;
 	int maxname=0;
-	while( fgets(buffer,FASTA_MAXLINE,MSA_file) != NULL ){
+	while( fgets(MSA_file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] == '>'){
 			int length = strlen(buffer) -1;
 			if (length > maxname){
@@ -42,20 +43,23 @@ void setNumStrains(FILE* MSA_file, int* strain_info){
 	strain_info[1]=maxname;
 }
 
-int readInMSA(FILE* MSA_file, int** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
+int readInMSA(gzFile MSA_file, int** MSA, int** allele_frequency, char** names, int* reference, int length_of_MSA){
 	char buffer [FASTA_MAXLINE];
 	int i=0;
 	int index=-1;
 	int found_ref=0;
 	int ref_index=0;
-	while( fgets(buffer,FASTA_MAXLINE,MSA_file) != NULL ){
+	while( gzgets(MSA_file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] == '>'){
 			index++;
 			for(i=1; buffer[i]!='\n'; i++){
 				names[index][i-1]=buffer[i];
 			}
 			names[index][i-1]='\0';
-			if (strcmp(names[index],"NC_045512v2")==0){
+			//if (strcmp(names[index],"NC_045512v2")==0){
+			//	found_ref=1;
+			//}
+			if (strcmp(names[index],"hCoV-19/Wuhan/WIV04/2019|EPI_ISL_402124|2019-12-30|China")==0){
 				found_ref=1;
 			}
 		}else{
@@ -494,16 +498,16 @@ int main(int argc, char **argv){
 	opt.remove_identical=0;
 	opt.print_variant=0;
 	parse_options(argc, argv, &opt);
-	FILE* MSA_file;
-	if (( MSA_file = fopen(opt.fasta,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	gzFile MSA_file;
+	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int length_of_MSA=0;
 	length_of_MSA=setMSALength(MSA_file);
-	fclose(MSA_file);
+	gzclose(MSA_file);
 	printf("Length of MSA: %d\n",length_of_MSA);
-	if (( MSA_file = fopen(opt.fasta,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int *strain_info = (int*)malloc(2*sizeof(int));
 	setNumStrains(MSA_file,strain_info);
-	fclose(MSA_file);
+	gzclose(MSA_file);
 	int number_of_strains = strain_info[0];
 	int max_name_length = strain_info[1];
 	free(strain_info);
@@ -512,28 +516,28 @@ int main(int argc, char **argv){
 	int** MSA = (int **)malloc(number_of_strains*sizeof(int *));
 	int i,j;
 	for(i=0; i<number_of_strains; i++){
-		MSA[i] = (int *)malloc(length_of_MSA*sizeof(int));
+		MSA[i] = (int *)malloc((length_of_MSA)*sizeof(int));
 	}
 	char** names_of_strains = (char**)malloc(number_of_strains*sizeof(char *));
 	for(i=0; i<number_of_strains; i++){
 		names_of_strains[i] = (char *)malloc((max_name_length+1)*sizeof(char));
 	}
-	int** allele_max = (int **)malloc(length_of_MSA*sizeof(int *));
+	int** allele_max = (int **)malloc((length_of_MSA)*sizeof(int *));
 	for(i=0; i<length_of_MSA; i++){
 		allele_max[i] = (int *)malloc(4*sizeof(int));
 		for(j=0; j<4; j++){
 			allele_max[i][j]=0;
 		}
 	}
-	int* reference = (int *)malloc(length_of_MSA*sizeof(int));
+	int* reference = (int *)malloc((length_of_MSA)*sizeof(int));
 	for(i=0; i<length_of_MSA; i++){
 		reference[i] = -1;
 	}
 	printf("Reading in MSA...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
-	if (( MSA_file = fopen(opt.fasta,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int ref_index=readInMSA(MSA_file,MSA,allele_max,names_of_strains,reference,length_of_MSA);
-	fclose(MSA_file);
+	gzclose(MSA_file);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	int start_of_ref = findStartOfRef(MSA,length_of_MSA,ref_index);
