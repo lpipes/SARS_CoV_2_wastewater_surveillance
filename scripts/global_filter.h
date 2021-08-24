@@ -1,7 +1,7 @@
 #ifndef _GLOBAL_
 #define _GLOBAL_
 
-#define FASTA_MAXLINE 40000
+#define FASTA_MAXLINE 50000
 
 typedef struct Options{
 	char fasta[1000];
