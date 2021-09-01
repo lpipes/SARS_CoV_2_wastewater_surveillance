@@ -16,6 +16,7 @@ static struct option long_options[]=
 	{"bowtie-db", required_argument, 0, 'd'},
 	{"EM-error",required_argument,0, 'e'},
 	{"reference",required_argument,0,'r'},
+	{"coverage",required_argument,0,'c'},
 	{0,0,0,0}
 };
 
@@ -33,7 +34,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-2, --reverse_file [REQUIRED]		reverse fasta\n\
 	-d, --bowtie-db [REQUIRED]		bowtie db\n\
 	-e, --EM-error [REQUIRED]		error rate for EM\n\
-	-r, --reference [REQUIRED]		reference positions file\n\
+	-c, --coverage				number of reads needed to calculate allele freq {default: 1]\n\
 	\n";
 
 void print_help_statement(){
@@ -49,7 +50,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hpr:i:s:f:o:v:0:1:2:d:e:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpi:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -79,11 +80,6 @@ void parse_options(int argc, char **argv, Options *opt){
 				if (!success)
 					fprintf(stderr, "Invalid fasta file\n");
 				break;
-			case 'r':
-				success = sscanf(optarg, "%s", opt->reference);
-				if (!success)
-					fprintf(stderr, "Invalid file\n");
-				break;
 			case '1':
 				success = sscanf(optarg, "%s", opt->forward_end_file);
 				if (!success)
@@ -96,6 +92,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				break;
 			case 'f':
 				success = sscanf(optarg, "%lf", &(opt->freq));
+				if (!success)
+					fprintf(stderr, "Invalid freq\n");
+				break;
+			case 'c':
+				success = sscanf(optarg, "%d", &(opt->coverage));
 				if (!success)
 					fprintf(stderr, "Invalid freq\n");
 				break;
