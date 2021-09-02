@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+    <title>Waste Water Surveillance</title>
+
+    <meta charset="UTF-8"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+</head>
+
+
+<body>
+	<title>Waste Water Surveillance</title>
+	<h1>Waste Water Surveillance</h1>
+	<br><br>
+	<h2>Paired Reads</h2>
+	<br><br>
+	<h3>Please choose "yes" if you want paired-end reads.</h3>
+	<br></br>
+	<h3>Please choose "no" if you want single-end reads.</h3>
+	<br><br>
+
+	<a href="{{ url_for('upload_yes') }}"><b>yes</b></a>
+	<br><br>
+	<a href="{{ url_for('upload_no') }}"><b>no</b></a>
+
+
+</body>
+
+</html>
