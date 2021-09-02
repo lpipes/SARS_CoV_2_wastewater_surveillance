@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+    <title>Waste Water Surveillance</title>
+
+    <meta charset="UTF-8"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+</head>
+
+
+<body>
+	<title>Waste Water Surveillance</title>
+	<h1>Waste Water Surveillance</h1>
+	<br><br>
+	<h2>Upload File</h2>
+	<br><br>
+	<h3>Please use "Manage" to preview and delete the files</h3>
+	<br><br>
+	<a href="{{ url_for('test') }}">Upload</a> /
+	<a href="{{ url_for('manage_file') }}">Manage</a>
+	<br></br>
+
+	<label>Successfully Uploaded!</label>
+	<br><br> 
+	<label>Your job has been submitted. You will receive an email with your results when your job has finished.</label>
+	<br><br>
+	<label>Click ok and you can leave</label>
+	<br><br>
+	<a href="{{ url_for('back_file') }}">OK</a>
+	<br><br>
+	
+
+				
+
+</body>
+
+</html>

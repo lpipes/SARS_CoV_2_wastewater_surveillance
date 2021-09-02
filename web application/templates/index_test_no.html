@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<head>
+    <title>Waste Water Surveillance</title>
+
+    <meta charset="UTF-8"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"/>
+</head>
+
+
+<body>
+	<title>Waste Water Surveillance</title>
+	<h1>Waste Water Surveillance</h1>
+	<br><br>
+	<h2>Upload Files</h2>
+	<br><br>
+	<h3>Please use "Manage" to preview and delete the files</h3>
+	<a href="{{ url_for('upload_no') }}">Upload</a> /
+	<a href="{{ url_for('manage_file') }}">Manage</a>	
+	<br><br>				
+	<form method="POST" enctype="multipart/form-data">
+		<label>Please enter your email and parameters: </label> 
+		<br><br>
+		<label>Email: </label>
+		<input class="input" type="text" name="email" placeholder="E-mail"/>
+		<!-- <br><br> -->
+
+		<label>Frequency: </label>
+		<input class="input" type="text" name="frequency" placeholder="frequency"/>
+		<!-- <br><br> -->
+
+		<label>EM Error: </label>
+		<input class="input" type="text" name="EM_error" placeholder="EM error"/>
+		<br><br>
+
+		<label>Please choose your file:</label>
+		<br><br>
+		<label>File</label>
+		<!-- <br><br> -->
+		{{ form.hidden_tag() }}
+		{{ form.fasta(multiple="multiple")}}
+		{% for error in form.fasta.errors %}
+		<span style="color: red;">{{ error }}</span>
+		{% endfor %}
+		<br><br>
+		{{ form.submit }}
+	</form>
+	{% if success %}				
+		<a href="{{ url_for('submit_file') }}"><b>OK</b></a>
+	{% endif %}
+
+
+</body>
+
+</html>
