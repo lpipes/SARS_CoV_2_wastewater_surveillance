@@ -7,6 +7,4 @@ The estimated proportion of candidate strains will be in the .csv file whose nam
 
 The time cost of each step, the most likely strain when assuming only one strain exists, and the likelihood ratio will be printed to the standard output stream. It will also print **Errors**  to the standard output stream. Currently, if the input contains less than **20** reads, the code will report there are not enough reads.
 
-Currently, the code will also generate a file called Rplot.pdf, which is useless. (I'm trying to fix this.)
-
 I'm still seeking ways to run SQUAREM in a parallel way.
