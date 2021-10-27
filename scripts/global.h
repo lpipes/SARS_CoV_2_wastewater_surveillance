@@ -3,6 +3,7 @@
 
 #define FASTA_MAXLINE 50000
 #define	MAX_CIGAR 1000
+#define MAX_READ_LENGTH 1000
 
 typedef struct Options{
 	char fasta[1000];
