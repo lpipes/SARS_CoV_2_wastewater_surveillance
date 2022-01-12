@@ -5,6 +5,7 @@ The method has 4 different components: imputation, redundancy removal, filtering
 
 # Installation
 To install
+	
 	git clone https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance.git
 	cd SARS_CoV_2_wastewater_surveillance/eliminate_strains
 	make
@@ -14,21 +15,22 @@ To install
 	make
 
 # Usage
-eliminate_strains [OPTIONS]
+
+	eliminate_strains [OPTIONS]
 	
-	-h, --help				usage: -i [Input MSA FASTA]
-	-i, --infile [REQUIRED]			MSA FASTA
-	-s, --samfile [REQUIRED]		SAM
-	-f, --freq [REQUIRED]			allele frequency to filter
-	-o, --outfile [REQUIRED]		outfile
-	-v, --variant_sites [REQUIRED]		variant sites file
-	-p, --paired				paired-reads
-	-0, --single_end_file [REQUIRED]	single-end fasta
-	-1, --forward_file [REQUIRED]		forward fasta
-	-2, --reverse_file [REQUIRED]		reverse fasta
-	-d, --bowtie-db [REQUIRED]		bowtie db
-	-e, --EM-error [REQUIRED]		error rate for EM
-	-c, --coverage				number of reads needed to calculate allele freq {default: 1]
+		-h, --help				usage: -i [Input MSA FASTA]
+		-i, --infile [REQUIRED]			MSA FASTA
+		-s, --samfile [REQUIRED]		SAM
+		-f, --freq [REQUIRED]			allele frequency to filter
+		-o, --outfile [REQUIRED]		outfile
+		-v, --variant_sites [REQUIRED]		variant sites file
+		-p, --paired				paired-reads
+		-0, --single_end_file [REQUIRED]	single-end fasta
+		-1, --forward_file [REQUIRED]		forward fasta
+		-2, --reverse_file [REQUIRED]		reverse fasta
+		-d, --bowtie-db [REQUIRED]		bowtie db
+		-e, --EM-error [REQUIRED]		error rate for EM
+		-c, --coverage				number of reads needed to calculate allele freq {default: 1]
 	
 
 # Performance
