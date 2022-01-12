@@ -2,9 +2,10 @@
 We present a method for estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. The method uses an initial step to remove unlikely strains, imputation of missing nucleotides using the global SARS-CoV-2 phylogeny, and an Expectation-Maximization (EM) algorithm for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
-Figure 1. Estimated proportions for simulated 300 bp single-end reads with five replicates for when the sample truly contains 1 (A), 3 (B), 5 (C), or 10 (D) strains out of a total of 1,499,078 non-redundant candidate strains in the database. The red dashed lines indicate the true proportion of each strain. 'Other' indicates the sum of estimated proportions for all strains that are not truly represented in the sample.
+<b>Figure 1</b>. Estimated proportions for simulated 300 bp single-end reads with five replicates for when the sample truly contains 1 (A), 3 (B), 5 (C), or 10 (D) strains out of a total of 1,499,078 non-redundant candidate strains in the database. The red dashed lines indicate the true proportion of each strain. 'Other' indicates the sum of estimated proportions for all strains that are not truly represented in the sample.
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/bayarea.png?raw=true">
-Figure 2. Estimated proportions of the top 25 strains estimated from wastewater shotgun sequencing data from Crits-Cristoph et al. (2021) and their log-likelihood ratios. Strains with an asterisk (*) are identical with other strains. 
+<b>Figure 2</b>. Estimated proportions of the top 25 strains estimated from wastewater shotgun sequencing data from Crits-Cristoph et al. (2021) and their log-likelihood ratios. Strains with an asterisk (*) are identical with other strains. 
+
 ## Notes for EM.R
 Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[-filter|f] [<double>]] [-[-llr|l]] [-[-num_show|n] <integer>] [-[-help|h]]
     
@@ -30,3 +31,10 @@ I'm still seeking ways to run SQUAREM in a parallel way.
 
 # Data from manuscript
 Simulations used in the manuscript can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838942">https://doi.org/10.5281/zenodo.5838942</a>. The imputed MSA can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838946">https://doi.org/10.5281/zenodo.5838946</a>. Identical strains are contained in the headers of the MSA separated by colons.
+
+#References
+
+Crits-Christoph A, Kantor RS, Olm MR, Whitney ON, Al-Shayeb B, Lou YC, Flamholz A, Kennedy LC, Greenwald H, Hinkle A, et al. Genome sequencing of sewage detects regionally prevalent SARS-CoV-2 variants. MBio. 2021;12(1):e02703–20.
+
+# Citations
+Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. biorxiv.
