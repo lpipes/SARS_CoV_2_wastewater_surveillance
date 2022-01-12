@@ -1,5 +1,5 @@
 # SARS_CoV_2_wastewater_surveillance
-<img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/">
+<img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
 ## Notes for EM.R
 Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[-filter|f] [<double>]] [-[-llr|l]] [-[-num_show|n] <integer>] [-[-help|h]]
     
