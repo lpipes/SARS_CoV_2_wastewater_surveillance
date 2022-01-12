@@ -1,4 +1,4 @@
-# SARS_CoV_2_wastewater_surveillance
+# Method for estimating relative proportions of SARS-CoV-2 strains from wastewater samples
 We present a method for estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. The method uses an initial step to remove unlikely strains, imputation of missing nucleotides using the global SARS-CoV-2 phylogeny, and an Expectation-Maximization (EM) algorithm for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 
 The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To estimate proportions of SARS-CoV-2 strains on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program.
