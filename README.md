@@ -4,7 +4,7 @@ We present a method for estimating the relative proportions of SARS-CoV-2 strain
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
 Figure 1. Estimated proportions for simulated 300 bp single-end reads with five replicates for when the sample truly contains 1 (A), 3 (B), 5 (C), or 10 (D) strains out of a total of 1,499,078 non-redundant candidate strains in the database. The red dashed lines indicate the true proportion of each strain. 'Other' indicates the sum of estimated proportions for all strains that are not truly represented in the sample.
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/bayarea.png?raw=true">
-Figure 2. Estimated proportions of the top 25 strains estimated from wastewater shotgun sequencing data from Crits-Cristoph et al. (2021) and their log-likelihood ratios. Strains with an asterisk (*) are identical with other strains. EPI\_ISL\_682010* is identical to EPI\_ISL\_682025, EPI\_ISL\_1373628, EPI\_ISL\_1373632, and EPI\_ISL\_1373659. EPI\_ISL\_451226* is identical to EPI\_ISL\_451227 and EPI\_ISL\_455983. EPI\_ISL\_625508* is identical to EPI\_ISL\_625520, EPI\_ISL\_672318, EPI\_ISL\_672449, EPI\_ISL\_739003, EPI\_ISL\_739029, EPI\_ISL\_739135, EPI\_ISL\_739161, EPI\_ISL\_739207, and EPI\_ISL\_739286. EPI\_ISL\_1859609* is identical to EPI\_ISL\_1859762. EPI\_ISL\_510925* is identical to EPI\_ISL\_510926. EPI\_ISL\_426109* is identical to  EPI\_ISL\_486012, EPI\_ISL\_570168, EPI\_ISL\_570172, EPI\_ISL\_576500, and EPI\_ISL\_576501. EPI\_ISL\_1074397* is identical to EPI\_ISL\_2190584. EPI\_ISL\_517805* is identical to EPI\_ISL\_527398 and EPI\_ISL_137362.
+Figure 2. Estimated proportions of the top 25 strains estimated from wastewater shotgun sequencing data from Crits-Cristoph et al. (2021) and their log-likelihood ratios. Strains with an asterisk (*) are identical with other strains. 
 ## Notes for EM.R
 Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[-filter|f] [<double>]] [-[-llr|l]] [-[-num_show|n] <integer>] [-[-help|h]]
     
@@ -27,3 +27,6 @@ The estimated proportion of candidate strains will be in the .csv file whose nam
 The time cost of each step will be printed to the standard output stream. It will also print **Errors**  to the standard output stream. Currently, if the input contains less than **20** reads, the code will report there are not enough reads.
 
 I'm still seeking ways to run SQUAREM in a parallel way.
+
+# Data from manuscript
+Simulations used in the manuscript can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838942">https://doi.org/10.5281/zenodo.5838942</a>. The imputed MSA can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838946">https://doi.org/10.5281/zenodo.5838946</a>. Identical strains are contained in the headers of the MSA separated by colons.
