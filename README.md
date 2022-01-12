@@ -1,7 +1,7 @@
 # SARS_CoV_2_wastewater_surveillance
 We present a method for estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. The method uses an initial step to remove unlikely strains, imputation of missing nucleotides using the global SARS-CoV-2 phylogeny, and an Expectation-Maximization (EM) algorithm for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 
-The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To estimate proportions of SARS-CoV-2 strains on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the eliminate_strains program.
+The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To estimate proportions of SARS-CoV-2 strains on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program.
 
 # Installation
 To install
@@ -42,6 +42,25 @@ And the following variant sites file:
 	eliminate_strains/global_variants.txt
 
 To impute and build a new database use `sarscov2_imputation` followed by `remove_redundant`.
+
+	sarscov2_imputation [OPTIONS]
+	
+		-h, --help			usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]
+		-i, --MSA [REQUIRED]		multiple sequence alignment in FASTA format
+		-o, --outfile [REQUIRED]	imputed output file in FASTA format
+		-t, --tree			phylogenetic tree in Newick format
+		-c, --common_allele		impute with the most common allele (no tree required)
+		-l, --limit			limit of leaf nodes within a clade [default:10000]
+
+	remove_redundant [OPTIONS]
+	
+		-h, --help				usage: -i [Input MSA FASTA]
+		-i, --infile [REQUIRED]			MSA FASTA
+		-v, --variant_sites [REQUIRED]		variant sites file to print
+		-r, --remove_identical			remove identical sequences
+		-o, --out_MSA [REQUIRED]		out MSA
+		-p, --print_variant_sites		print variant sites
+		-f, --reference_pos [REQUIRED]		print reference positions
 
 `sarscov2_imputation` and `remove_redundant` uses <a href="https://github.com/DavidLeeds/hashmap">David Leeds' hashmap</a>.
 
