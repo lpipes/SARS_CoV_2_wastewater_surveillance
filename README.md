@@ -15,6 +15,7 @@ To install
 	make
 
 # Usage
+eliminate_strains filters unlikely SARS-CoV-2 genomes, prints a mismatch matrix, and also runs the EM_C_LLR.R program.
 
 	eliminate_strains [OPTIONS]
 	
@@ -39,6 +40,10 @@ To use the bowtie2 database compatible with the pre-built database use the follo
 And the following variant sites file:
 	
 	eliminate_strains/global_variants.txt
+
+To impute and build a new database use sarscov2_imputation followed by remove_redundant.
+
+`sarscov2_imputation` and 
 
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
