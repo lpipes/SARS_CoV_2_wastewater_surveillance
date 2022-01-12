@@ -41,9 +41,9 @@ And the following variant sites file:
 	
 	eliminate_strains/global_variants.txt
 
-To impute and build a new database use sarscov2_imputation followed by remove_redundant.
+To impute and build a new database use `sarscov2_imputation` followed by `remove_redundant`.
 
-`sarscov2_imputation` and 
+`sarscov2_imputation` and `remove_redundant` uses <a href="https://github.com/DavidLeeds/hashmap">David Leeds' hashmap</a>.
 
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
