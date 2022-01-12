@@ -1,7 +1,35 @@
 # SARS_CoV_2_wastewater_surveillance
 We present a method for estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. The method uses an initial step to remove unlikely strains, imputation of missing nucleotides using the global SARS-CoV-2 phylogeny, and an Expectation-Maximization (EM) algorithm for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 
-The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To run the program on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/>. 
+The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To estimate proportions of SARS-CoV-2 strains on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the eliminate_strains program.
+
+# Installation
+To install
+	git clone https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance.git
+	cd SARS_CoV_2_wastewater_surveillance/eliminate_strains
+	make
+	cd ../imputation
+	make
+	cd ../remove_redundant
+	make
+
+# Usage
+eliminate_strains [OPTIONS]
+	
+	-h, --help				usage: -i [Input MSA FASTA]
+	-i, --infile [REQUIRED]			MSA FASTA
+	-s, --samfile [REQUIRED]		SAM
+	-f, --freq [REQUIRED]			allele frequency to filter
+	-o, --outfile [REQUIRED]		outfile
+	-v, --variant_sites [REQUIRED]		variant sites file
+	-p, --paired				paired-reads
+	-0, --single_end_file [REQUIRED]	single-end fasta
+	-1, --forward_file [REQUIRED]		forward fasta
+	-2, --reverse_file [REQUIRED]		reverse fasta
+	-d, --bowtie-db [REQUIRED]		bowtie db
+	-e, --EM-error [REQUIRED]		error rate for EM
+	-c, --coverage				number of reads needed to calculate allele freq {default: 1]
+	
 
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
