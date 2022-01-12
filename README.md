@@ -33,8 +33,11 @@ To install
 		-c, --coverage				number of reads needed to calculate allele freq {default: 1]
 	
 To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
+	
 	eliminate_strains/EPI_ISL_402124.fasta
+
 And the following variant sites file:
+	
 	eliminate_strains/global_variants.txt
 
 # Performance
