@@ -32,6 +32,10 @@ To install
 		-e, --EM-error [REQUIRED]		error rate for EM
 		-c, --coverage				number of reads needed to calculate allele freq {default: 1]
 	
+To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
+	eliminate_strains/EPI_ISL_402124.fasta
+And the following variant sites file:
+	eliminate_strains/global_variants.txt
 
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
