@@ -19,19 +19,19 @@ To install
 
 	eliminate_strains [OPTIONS]
 	
-		-h, --help				usage: -i [Input MSA FASTA]
-		-i, --infile [REQUIRED]			MSA FASTA
-		-s, --samfile [REQUIRED]		SAM
-		-f, --freq [REQUIRED]			allele frequency to filter
-		-o, --outfile [REQUIRED]		outfile
-		-v, --variant_sites [REQUIRED]		variant sites file
-		-p, --paired				paired-reads
-		-0, --single_end_file [REQUIRED]	single-end fasta
-		-1, --forward_file [REQUIRED]		forward fasta
-		-2, --reverse_file [REQUIRED]		reverse fasta
-		-d, --bowtie-db [REQUIRED]		bowtie db
-		-e, --EM-error [REQUIRED]		error rate for EM
-		-c, --coverage				number of reads needed to calculate allele freq {default: 1]
+	-h, --help				
+	-i, --infile [REQUIRED]			MSA FASTA of SARS-CoV-2 reference strains
+	-s, --samfile [REQUIRED]		output sam file to print alignments
+	-f, --freq [REQUIRED]			allele frequency to filter unlikely strains
+	-o, --outfile [REQUIRED]		output file to print mismatch matrix for EM algorithm
+	-v, --variant_sites [REQUIRED]		list of variant sites
+	-d, --bowtie-db [REQUIRED]		path to Wuhan-Hu-1 bowtie2 database
+	-p, --paired				using paired-reads
+	-0, --single_end_file			single-end reads
+	-1, --forward_file			if using paired-reads, the forward reads file
+	-2, --reverse_file			if using paired-reads, the reverse reads file
+	-e, --EM-error				error rate for EM algorithm
+	-c, --coverage				number of reads needed to calculate allele freq [default: 1]
 	
 To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
 	
@@ -101,4 +101,4 @@ Simulations used in the manuscript can be downloaded at <a href="https://doi.org
 Crits-Christoph A, Kantor RS, Olm MR, Whitney ON, Al-Shayeb B, Lou YC, Flamholz A, Kennedy LC, Greenwald H, Hinkle A, et al. Genome sequencing of sewage detects regionally prevalent SARS-CoV-2 variants. MBio. 2021;12(1):e02703–20.
 
 # Citations
-Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. biorxiv .
+Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v1">medRxiv</a>.
