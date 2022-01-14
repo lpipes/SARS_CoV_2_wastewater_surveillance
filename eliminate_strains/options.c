@@ -8,33 +8,31 @@ static struct option long_options[]=
 	{"freq", required_argument, 0, 'f'},
 	{"outfile", required_argument, 0, 'o'},
 	{"variant_sites", required_argument, 0, 'v'},
-	{"remove_identical", no_argument, 0, 'r'},
 	{"paired", no_argument, 0, 'p'},
 	{"single_end", required_argument, 0, '0'},
 	{"forward_read", required_argument, 0, '1'},
 	{"reverse_read", required_argument, 0, '2'},
 	{"bowtie-db", required_argument, 0, 'd'},
 	{"EM-error",required_argument,0, 'e'},
-	{"reference",required_argument,0,'r'},
 	{"coverage",required_argument,0,'c'},
 	{0,0,0,0}
 };
 
 char usage[] = "\neliminate_strains [OPTIONS]\n\
 	\n\
-	-h, --help				usage: -i [Input MSA FASTA]\n\
-	-i, --infile [REQUIRED]			MSA FASTA\n\
-	-s, --samfile [REQUIRED]		SAM\n\
-	-f, --freq [REQUIRED]			allele frequency to filter\n\
-	-o, --outfile [REQUIRED]		outfile\n\
-	-v, --variant_sites [REQUIRED]		variant sites file\n\
-	-p, --paired				paired-reads\n\
-	-0, --single_end_file [REQUIRED]	single-end fasta\n\
-	-1, --forward_file [REQUIRED]		forward fasta\n\
-	-2, --reverse_file [REQUIRED]		reverse fasta\n\
-	-d, --bowtie-db [REQUIRED]		bowtie db\n\
-	-e, --EM-error [REQUIRED]		error rate for EM\n\
-	-c, --coverage				number of reads needed to calculate allele freq {default: 1]\n\
+	-h, --help				\n\
+	-i, --infile [REQUIRED]			MSA FASTA of SARS-CoV-2 reference strains\n\
+	-s, --samfile [REQUIRED]		output sam file to print alignments\n\
+	-f, --freq [REQUIRED]			allele frequency to filter unlikely strains\n\
+	-o, --outfile [REQUIRED]		output file to print mismatch matrix for EM algorithm\n\
+	-v, --variant_sites [REQUIRED]		list of variant sites\n\
+	-d, --bowtie-db [REQUIRED]		path to Wuhan-Hu-1 bowtie2 database\n\
+	-p, --paired				using paired-reads\n\
+	-0, --single_end_file			single-end reads\n\
+	-1, --forward_file			if using paired-reads, the forward reads file\n\
+	-2, --reverse_file			if using paired-reads, the reverse reads file\n\
+	-e, --EM-error				error rate for EM algorithm\n\
+	-c, --coverage				number of reads needed to calculate allele freq [default: 1]\n\
 	\n";
 
 void print_help_statement(){
