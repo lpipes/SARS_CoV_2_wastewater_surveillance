@@ -13,8 +13,6 @@ To install
 	make
 	cd ../imputation
 	make
-	cd ../remove_redundant
-	make
 
 # Usage
 `eliminate_strains` filters unlikely SARS-CoV-2 genomes, prints a mismatch matrix, and also runs the `EM_C_LLR.R` program.
