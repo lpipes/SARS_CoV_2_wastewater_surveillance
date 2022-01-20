@@ -4,7 +4,7 @@
  * Hashmap is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
  */
-
+#include <stdbool.h>
 #pragma once
 
 struct hashmap_entry;

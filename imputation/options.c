@@ -5,20 +5,24 @@ static struct option long_options[]=
 	{"help", no_argument, 0, 'h'},
 	{"MSA", required_argument, 0, 'i'},
 	{"tree", optional_argument, 0, 't'},
+	{"final", required_argument, 0, 'm'},
 	{"common_allele", optional_argument, 0, 'c'},
 	{"outfile", optional_argument, 0, 'o'},
 	{"limit", optional_argument, 0, 'l'},
+	{"variants", required_argument, 0, 'v'},
 	{0,0,0,0}
 };
 
 char usage[] = "\nsarscov2_imputation [OPTIONS]\n\
 	\n\
-	-h, --help			usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]\n\
-	-i, --MSA [REQUIRED]		multiple sequence alignment in FASTA format\n\
-	-o, --outfile [REQUIRED]	imputed output file in FASTA format\n\
-	-t, --tree			phylogenetic tree in Newick format\n\
-	-c, --common_allele		impute with the most common allele (no tree required)\n\
-	-l, --limit			limit of leaf nodes within a clade [default:10000]\n\
+	-h, --help						usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]\n\
+	-i, --MSA [INFILE, REQUIRED]				multiple sequence alignment in FASTA format\n\
+	-m, --final [OUTFILE, REQUIRED if tree imputation]	final out file\n\
+	-o, --outfile [OUTFILE, REQUIRED]			imputed output file in FASTA format\n\
+	-t, --tree [OUTFILE, REQUIRED if tree imputation]	rooted phylogenetic tree in Newick format\n\
+	-c, --common_allele					impute with the most common allele (no tree required)\n\
+	-l, --limit [INT]					limit of leaf nodes within a clade [default:10000]\n\
+	-v, --variants [OUTFILE, REQUIRED if tree imputation]	file to print variants\n\
 	\n";
 
 void print_help_statement(){
@@ -34,7 +38,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hci:t:o:l:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hci:t:o:l:v:m:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -45,6 +49,16 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->msa);
 				if (!success)
 					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case 'm':
+				success = sscanf(optarg, "%s", opt->out_MSA);
+				if (!success)
+					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case 'v':
+				success = sscanf(optarg, "%s", opt->variant);
+				if (!success)
+					fprintf(stderr, "Invalid text file\n");
 				break;
 			case 't':
 				success = sscanf(optarg, "%s", opt->tree);

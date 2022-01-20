@@ -15,6 +15,7 @@ int comma=0;
 int open=0;
 double minVariance = 99999999999999999;
 int minVarNode = -1;
+HASHMAP(char, struct specmap) sm;
 
 void printtree(node* tree, int root, int numspec){
 	int i;
@@ -58,7 +59,7 @@ void linknodes(node* tree, int i,int j,int node) /*linking i down to node and j 
 }
 
 /*subfunction needed by ‘getclade*/
-int specsearch(node* tree, FILE *treefile, char **nodeIDs,int numspec,struct hashmap specmap, double average){
+int specsearch(node* tree, FILE *treefile, char **nodeIDs,int numspec,/*struct specmap* sm,*/ double average){
 	char ch;
 	int i=0;
 	char specname[MAX_NODENAME];
@@ -72,8 +73,13 @@ int specsearch(node* tree, FILE *treefile, char **nodeIDs,int numspec,struct has
 			}
 		}
 		specname[i]='\0';
+		/*if (i==0){
+			ungetc(ch, treefile);
+			return 0;
+		}*/
 		//This is sooo slow... make faster
-		int index = hashmap_get(&specmap,specname);
+		if ( i !=0 ){
+		int index = hashmap_get(&sm,specname);
 		//int tmp1=0;
 		//for(tmp1=0;tmp1<numspec;tmp1++){
 		//	if ( !strcmp(nodeIDs[tmp1],specname) ){
@@ -88,8 +94,11 @@ int specsearch(node* tree, FILE *treefile, char **nodeIDs,int numspec,struct has
 		fscanf(treefile,"%le",&tree[tip+numspec-2].bl);
 		if ( tree[tip+numspec-2].bl == 0 ){
 			tree[tip+numspec-2].bl = EPSILON/average;
+			//tree[tip+numspec-2].bl = 1.0000000000000001e-09;
 		}else{
 			tree[tip+numspec-2].bl = tree[tip+numspec-2].bl/average;
+			//tree[tip+numspec-2].bl = tree[tip+numspec-2].bl/29892;
+		}
 		}
 		return 1;
 	}else{
@@ -118,14 +127,14 @@ int getnodenumb(FILE *treefile){
 	return (i+comma+1);
 }
 /*some old code for reading a Newick tree*/
-int getclade(node* tree, FILE *treefile, char** nodeIDs, int numspec, struct hashmap specmap, double average){
+int getclade(node* tree, FILE *treefile, char** nodeIDs, int numspec, /*struct specmap* sm,*/ double average){
 	int n1, n2, n3;
 	char ch;
 	n1=-1;
 	n2=-1;
 	n3=-1;
 	do{
-		if (specsearch(tree,treefile,nodeIDs,numspec,specmap,average)==1){
+		if (specsearch(tree,treefile,nodeIDs,numspec,/*&sm,*/average)==1){
 			/*tip++;*/
 			/*if ( open > 1 ){
 				printf("found polytomy\n");
@@ -171,8 +180,8 @@ int getclade(node* tree, FILE *treefile, char** nodeIDs, int numspec, struct has
 		if (ch=='('){
 			//open=0;
 			n3=getnodenumb(treefile);
-			n1=getclade(tree,treefile,nodeIDs,numspec,specmap,average);
-			n2=getclade(tree,treefile,nodeIDs,numspec,specmap,average);
+			n1=getclade(tree,treefile,nodeIDs,numspec,/*&sm,*/average);
+			n2=getclade(tree,treefile,nodeIDs,numspec,/*&sm,*/average);
 			if ( n1!=-1 && n2!=-1 && n3!=-1){linknodes(tree,n1-1,n2-1,n3-1);}
 			if ( n1 ==-1 || n2==-1 || n3 ==-1 ){ ungetc(ch,treefile); }
 		}
@@ -186,7 +195,7 @@ int setMSALength(gzFile MSA_file){
 	int iter=0;
 	while( gzgets(MSA_file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] != '>'){
-			for(i=0; buffer[i]!='\0'; i++){
+			for(i=0; buffer[i]!='\n'; i++){
 				length++;
 			}
 		}else if (iter==0){
@@ -277,10 +286,117 @@ void readInMSA_for_partition(node* tree, gzFile MSA_file, int** MSA, int* leaf_n
 		}
 	}
 }
-void readInNodes(gzFile MSA_file, char** nodeIDs, int length_of_MSA, struct hashmap specmap){
+int readInImputed(char** nodeIDs, char** MSA, int* reference, int max_name, int length_of_MSA,int start, int end, int ref_length, Options opt, int numspec){
+	char buffer[FASTA_MAXLINE];
+	//char *buffer = NULL;
+	//char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	int i=0;
+	int j=0;
+	int k=0;
+	int index=-1;
+	char name[max_name];
+	char sequence[length_of_MSA];
+	int ref_index = -1;
+	printf("creating hash...\n");
+	HASHMAP(char, struct blob) hash;
+	hashmap_init(&hash, hashmap_hash_string, strcmp);
+	//gzFile MSA_file = Z_NULL;
+	//if ((MSA_file=gzopen(opt.outfile,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
+	FILE* MSA_file;
+	MSA_file = fopen(opt.outfile,"r");
+	if (MSA_file == 0){
+		perror("ERROR OPENING FILE!");
+		exit(-1);
+	}
+	//if (NULL==(MSA_file=fopen(opt.outfile,"r"))){ puts("Cannot open file!"); exit(-1);}
+	//while( ( read=getline(&buffer, &len, MSA_file)) != -1){
+	while( fgets(buffer,FASTA_MAXLINE,MSA_file) != NULL){
+		if ( buffer[0] == '>'){
+			index++;
+			for(i=1; buffer[i]!='\n'; i++){
+				name[i-1]=buffer[i];
+			}
+			name[i-1]='\0';
+			strcpy(nodeIDs[index],name);
+			if (strcmp(name,"EPI_ISL_402124")==0){
+				ref_index=index;
+			}
+		}else{
+			int size = strlen(buffer);
+			j=0;
+			for(i=start; i<end; i++){
+				if ( i==reference[j] ){
+					sequence[j]=buffer[i];
+					j++;
+				}
+			}
+			sequence[j]='\0';
+			strcpy(MSA[index],sequence);
+			//hashmap_put(&hash,MSA[index],nodeIDs[index]);
+			struct blob *c;
+			c=hashmap_get(&hash, MSA[index]);
+			if (c==NULL){
+				struct blob *b;
+				b = malloc(sizeof(*b));
+				b->key = MSA[index];
+				b->data = nodeIDs[index];
+				b->data_len = strlen(nodeIDs[index]);
+				hashmap_put(&hash, b->key, b);
+			}else{
+				char x = ':';
+				for(k=0; k<MAX_STRAINS*max_name; k++){
+					if ( c->data[k] == '\0' ){
+						break;
+					}		
+				}
+				c->data[k] = ':';
+				strcat(c->data,nodeIDs[index]);
+				hashmap_put(&hash, c->key, c);
+			}
+		}
+	}
+	fclose(MSA_file);
+	//hashmap_put(&hash, MSA[ref_index], nodeIDs[index]);
+	const char *key;
+	const char *value;
+	FILE* remove_ident_file;
+	int remaining_strains=0;
+	struct blob *d;
+	printf("printing final out file\n");
+	if (( remove_ident_file = fopen(opt.out_MSA,"w")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	hashmap_foreach(key, d, &hash){
+		fprintf(remove_ident_file,">%s\n",d->data);
+		fprintf(remove_ident_file,"%s\n",key);
+		remaining_strains++;
+	}
+	fclose(remove_ident_file);
+	//printf("remaining strains: %d\n",remaining_strains);
+	//strains_remaining=malloc(remaining_strains*sizeof(int));
+	//for(i=0; i<remaining_strains; i++){
+	//	strains_remaining[i]=-1;
+	//}
+	//j=0;
+	//hashmap_foreach(key,value, &hash){
+	//	for(i=0; i<numspec; i++){
+	//		if (strcmp(value,nodeIDs[i])==0){
+	//			strains_remaining[j]=i;
+	//			j++;
+	//		}
+	//	}
+	//}
+	return remaining_strains;
+}
+int readInNodes(gzFile MSA_file, char** nodeIDs, int length_of_MSA, /*struct blob *sm,*/ int* reference, int* start_end){
 	char buffer[length_of_MSA+1];
 	int i=0;
 	int index=-1;
+	int save=0;
+	int ref_length=0;
+	int iter=0;
+	//HASHMAP(char, struct specmap) sm;
+	//hashmap_init(&sm, hashmap_hash_string, strcmp);
 	while( gzgets(MSA_file,buffer,length_of_MSA+1) != NULL ){
 		if ( buffer[0] == '>'){
 			index++;
@@ -288,9 +404,43 @@ void readInNodes(gzFile MSA_file, char** nodeIDs, int length_of_MSA, struct hash
 				nodeIDs[index][i-1]=buffer[i];
 			}
 			nodeIDs[index][i-1]='\0';
-			hashmap_put(&specmap,nodeIDs[index],index);
+			if ( strcmp(nodeIDs[index],"EPI_ISL_402124")==0){
+				save=1;
+			}
+			hashmap_put(&sm,nodeIDs[index],index);
+		}else if ( save==1){
+			int iter = 0;
+			for(i=0; i<buffer[i]!='\n'; i++){
+				if( buffer[i] == 'A' || buffer[i] == 'G' || buffer[i] == 'C' || buffer[i] == 'T' || buffer[i] =='a' || buffer[i] =='c' || buffer[i]=='t' || buffer[i]=='g'){
+					start_end[0] = i;
+					break;
+				}
+			}
+			//printf("start is %d\n",start_end[0]);
+			for(i=length_of_MSA-1; i>=0; i--){
+				if ( buffer[i]=='G' || buffer[i] == 'C' || buffer[i] == 'T' || buffer[i]=='g' || buffer[i]=='c' || buffer[i]=='t'){
+					start_end[1]=i;
+					break;
+				}
+			}
+			//printf("end is %d\n",start_end[1]);
+			for(i=start_end[0]; i<start_end[1]+1; i++){
+				if ( buffer[i]!= '-' ){
+					iter++;
+				}
+			}
+			ref_length = iter;
+			iter=0;
+			for(i=start_end[0]; i<start_end[1]+1; i++){
+				if ( buffer[i]!= '-' ){
+					reference[iter]=i;
+					iter++;
+				}
+			}
+			save=0;
 		}
 	}
+	return ref_length;
 }
 void makeconnc(node* tree, int node, int root,int numspec, int numbase,double lambda,int** seq, double* UFCnc, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5],  int number_of_leaves)
 
@@ -522,15 +672,15 @@ void clearGlobals(double parameters[10], double LRVECnc[4][4], double RRVECnc[4]
 		parameters[i]=1.0;
 	}
 }
-void makeposterior_nc(node* tree, int node, int numbase, int numspec, int** seq, double** templike_nc, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5], int number_of_leaves)
+void makeposterior_nc(node* tree, int node, int numbase, int numspec, int** seq, double** templike_nc, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5], int number_of_leaves,int parent)
 {
-  int i,j, s, parent, otherb, child1, child2, b;
+  int i,j, s, /*parent,*/ otherb, child1, child2, b;
   double bl, max;
 	int l=0;
 
   child1 = tree[node].up[0];
   child2 = tree[node].up[1];
-  parent = tree[node].down;
+  //parent = tree[node].down;
   bl = tree[node].bl;
   maketransitionmatrixnc(0, bl, LRVECnc, RRVECnc, RRVALnc, PMATnc);
   if ((otherb = tree[parent].up[0])==node)
@@ -572,9 +722,9 @@ void makeposterior_nc(node* tree, int node, int numbase, int numspec, int** seq,
       tree[node].posteriornc[s][i]=tree[node].posteriornc[s][i]/max;
   }
   if (tree[child1].up[0]>-1)
-    makeposterior_nc(tree,child1,numbase,numspec,seq,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves);
+    makeposterior_nc(tree,child1,numbase,numspec,seq,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves,node);
   if (tree[child2].up[0]>-1)
-    makeposterior_nc(tree,child2,numbase,numspec,seq,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves);
+    makeposterior_nc(tree,child2,numbase,numspec,seq,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves,node);
 }
 //THIS FUNCTION IS IMPLEMENTED WITHOUT GAMMA CATEGORIES
 void getposterior_nc(double parameters[10], node* tree,  int numspec, int numbase, int root, int** MSA, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5], int number_of_children, int* node_list, int number_of_leaves){
@@ -599,8 +749,8 @@ void getposterior_nc(double parameters[10], node* tree,  int numspec, int numbas
 			tree[root].posteriornc[s][i] = 1.0;
 		}
 	}
-	if (tree[tree[root].up[0]].up[0]>-1) makeposterior_nc(tree,tree[root].up[0],numbase,numspec,MSA,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves);
-	if (tree[tree[root].up[1]].up[0]>-1) makeposterior_nc(tree,tree[root].up[1],numbase,numspec,MSA,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves);
+	if (tree[tree[root].up[0]].up[0]>-1) makeposterior_nc(tree,tree[root].up[0],numbase,numspec,MSA,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves,root);
+	if (tree[tree[root].up[1]].up[0]>-1) makeposterior_nc(tree,tree[root].up[1],numbase,numspec,MSA,templike_nc,LRVECnc,RRVECnc,RRVALnc,PMATnc,number_of_leaves,root);
 	for (j=0; j<number_of_children; j++){
 		if (tree[node_list[j]].up[0]>-1){
 			for (s=0; s<numbase; s++){
@@ -1071,7 +1221,7 @@ void getSequenceLengths(gzFile file, int* lengths){
 	while( gzgets(file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] != '>'){
 			length=0;
-			for(i=0; buffer[i]!='\0';i++){
+			for(i=0; buffer[i]!='\n';i++){
 				if ( buffer[i] != '-' ){
 					length++;
 				}
@@ -1084,12 +1234,45 @@ void getSequenceLengths(gzFile file, int* lengths){
 double calculateAvgSeqLength(int numspec, int* sequence_lengths){
 	int i;
 	double average = 0;
-	long double sum=0;
+	long double sum = 0;
 	for(i=0; i<numspec; i++){
 		sum = sequence_lengths[i] + sum;
 	}
 	average = sum/numspec;
 	return average;
+}
+void findVariantSites(char** MSA, int ref_length, int numspec, Options opt, int* invariant_sites, int* reference){
+	int i=0;
+	int j=0;
+	int number_of_sites=0;
+	for(i=0; i<ref_length; i++){
+		char base = MSA[0][reference[i]];
+		int invariant=0;
+		for(j=1; j<numspec; j++){
+			if (base != MSA[j][reference[i]] ){
+				invariant++;
+			}
+		}
+		if (invariant==0){
+			invariant_sites[i]=reference[i];
+		}
+	}
+	for(i=0; i<ref_length; i++){
+		if ( reference[i] == -1 ){ break; }
+		if (invariant_sites[i] == -1){
+			number_of_sites++;
+		}
+	}
+	FILE *invariant_file;
+	if (( invariant_file = fopen(opt.variant,"w")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	fprintf(invariant_file,"%d\n",number_of_sites);
+	for(i=0; i<ref_length; i++){
+		if ( reference[i] == -1 ){ break; }
+		if (invariant_sites[i] == -1 ){
+			fprintf(invariant_file,"%d\n",i);
+		}
+	}
+	fclose(invariant_file);
 }
 int main(int argc, char **argv){
 	Options opt;
@@ -1097,6 +1280,28 @@ int main(int argc, char **argv){
 	opt.limit=10000;
 	parse_options(argc,argv,&opt);
 	struct timespec tstart={0,0}, tend={0.0};
+	//FILE* file;
+	//char buffer[FASTA_MAXLINE];
+	//int c;
+	//file=fopen("hello.fasta","r");
+	//if (file){
+	//	while ((c=getc(file)) != EOF )
+	//		putchar(c);
+	//	fclose(file);
+	//}
+	//ssize_t read;
+	//char *line = NULL;
+	//size_t len=0;
+	//while((read=getline(&line, &len, file))!= -1){
+	//	printf("%s",line);
+	//}
+	//if ((file=fopen("hello.fasta","r"))==NULL ){ puts("Cannot open MSA file!"); exit(-1);}
+	//while( fgets(file,buffer,FASTA_MAXLINE) != NULL){
+	//	int countt=0;
+	//}
+	//printf("finished");
+	//fclose(file);
+	//exit(1);
 	gzFile MSA_file = Z_NULL;
 	if ((MSA_file=gzopen(opt.msa,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
 	int length_of_MSA=0;
@@ -1114,17 +1319,33 @@ int main(int argc, char **argv){
 	int i,j, k, l;
 	char **nodeIDs = (char**)malloc(numspec*sizeof(char*));
 	for(i=0; i<numspec; i++){
-		nodeIDs[i] = malloc(max_name_length*sizeof(char));
+		nodeIDs[i] = malloc(MAX_STRAINS*max_name_length*sizeof(char));
+		for(j=0; j<MAX_STRAINS*max_name_length; j++){
+			nodeIDs[i][j]='\0';
+		}
 	}
 	printf("Reading in MSA...  ");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
-	struct hashmap specmap;
-	hashmap_init(&specmap, hashmap_hash_string, hashmap_compare_string, numspec);
+	//struct hashmap specmap;
+	//hashmap_init(&specmap, hashmap_hash_string, hashmap_compare_string, numspec);
+	hashmap_init(&sm, hashmap_hash_string, strcmp);
+	int* reference = (int*)malloc(length_of_MSA*sizeof(int));
+	for(i=0; i<length_of_MSA; i++){
+		reference[i]=-1;
+	}
+	int* start_end = (int*)malloc(2*sizeof(int));
+	start_end[0] = -1;
+	start_end[1] = -1;
 	if ((MSA_file=gzopen(opt.msa,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
-	readInNodes(MSA_file,nodeIDs,length_of_MSA,specmap);
+	int ref_length=readInNodes(MSA_file,nodeIDs,length_of_MSA,/*&sm,*/reference,start_end);
 	gzclose(MSA_file);
+	int start_of_MSA = start_end[0];
+	int end_of_MSA = start_end[1];
+	free(start_end);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+	printf("Start of MSA: %d\n",start_of_MSA);
+	printf("End of MSA: %d\n",end_of_MSA);
 	if (opt.common==1){
 		printf("Imputing with the most common allele...  ");
 		clock_gettime(CLOCK_MONOTONIC, &tstart);
@@ -1139,7 +1360,10 @@ int main(int argc, char **argv){
 		int** MSA = (int**)malloc(numspec*sizeof(int*));
 		for(i=0; i<numspec; i++){
 			MSA[i] = malloc(length_of_MSA*sizeof(int));
-			memset(MSA[i],'\0',length_of_MSA);
+			//memset(MSA[i],'\0',length_of_MSA);
+			for(j=0; j<length_of_MSA; j++){
+				MSA[i][j] = '\0';
+			}
 		}
 		if ((MSA_file=gzopen(opt.msa,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
 		readInMSA(MSA_file,MSA,length_of_MSA);
@@ -1151,10 +1375,10 @@ int main(int argc, char **argv){
 		print_max_allele(allele_max_out_file,MSA,numspec,length_of_MSA,imputation,nodeIDs);
 		fclose(allele_max_out_file);
 		free(imputation);
-		for(i=0; i<numspec; i++){
-			free(nodeIDs[i]);
-		}
-		free(nodeIDs);
+		//for(i=0; i<numspec; i++){
+		//	free(nodeIDs[i]);
+		//}
+		//free(nodeIDs);
 		for(i=0; i<length_of_MSA; i++){
 			free(allele_max[i]);
 		}
@@ -1216,16 +1440,16 @@ int main(int argc, char **argv){
 		fclose(treefile);
 		printf("para: %d\n",para);*/
 		if (NULL==(treefile=fopen(opt.tree,"r"))){ puts("Cannot open tree!"); exit(-1);}
-		int root=getclade(tree,treefile,nodeIDs,numspec,specmap,average)-1;
+		int root=getclade(tree,treefile,nodeIDs,numspec,/*&sm,*/average)-1;
 		fclose(treefile);
 		clock_gettime(CLOCK_MONOTONIC, &tend);
 		printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 		//printtree(tree,root,numspec);
-		for(i=0; i<numspec; i++){
-			free(nodeIDs[i]);
-		}
-		free(nodeIDs);
-		hashmap_destroy(&specmap);
+		//for(i=0; i<numspec; i++){
+		//	free(nodeIDs[i]);
+		//}
+		//free(nodeIDs);
+		//hashmap_destroy(&sm);
 		tree[root].down=-1;
 		get_number_descendants(tree,root);
 		assignDepth(tree, tree[root].up[0], tree[root].up[1], 1);
@@ -1250,6 +1474,22 @@ int main(int argc, char **argv){
 		clock_gettime(CLOCK_MONOTONIC, &tend);
 		printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 		clock_gettime(CLOCK_MONOTONIC, &tstart);
+		/*for(i=0; i<max_iter; i++){
+			int* node_list_children = (int*)malloc(MAX_NODE_LIST*sizeof(int));
+			for(j=0; j<MAX_NODE_LIST; j++){
+				node_list_children[j]=-1;
+			}
+			get_children(tree,node_list[i],node_list_children);
+			if ( node_list_children[0] == -1){
+				node_list_children[0] = node_list[i];
+			}
+			for(j=0; j<MAX_NODE_LIST; j++){
+				if (node_list_children[j] == 3117130 ){
+					printf("partition %d\n",i);
+				}
+			}
+		}
+		exit(1);*/
 		if ( max_iter > 0 ){
 		for(i=0; i<max_iter; i++){
 			printf("Imputing partition %d size %d\n",i,tree[node_list[i]].nd);
@@ -1296,7 +1536,7 @@ int main(int argc, char **argv){
 			int** MSA = (int**)malloc(k*sizeof(int*));
 			for(j=0; j<k; j++){
 				MSA[j]= malloc(length_of_MSA*sizeof(int));
-				memset(MSA[j],'\0',length_of_MSA);
+				memset(MSA[j],0,length_of_MSA);
 			}
 			if ((MSA_file=gzopen(opt.msa,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
 			readInMSA_for_partition(tree,MSA_file,MSA,leaf_nodes,length_of_MSA,max_name_length,k);
@@ -1357,4 +1597,38 @@ int main(int argc, char **argv){
 		clock_gettime(CLOCK_MONOTONIC, &tend);
 		printf("Took %.5fsec\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	}
+	printf("Allocating memory to read in imputed file\n");
+	char** MSAi = (char**)malloc(numspec*sizeof(char*));
+	for(i=0; i<numspec; i++){
+		MSAi[i] = (char*)malloc(length_of_MSA*sizeof(char));
+	}
+	//FILE* Imputed = NULL;
+	//if ((Imputed=fopen(opt.outfile,"r"))==NULL ){ puts("Cannot open MSA file!"); exit(-1);}
+	//FILE *outfile;
+        //if (NULL==(outfile=fopen(opt.outfile,"r"))){ puts("Cannot open file!"); exit(-1);}
+	//char buffer[FASTA_MAXLINE];
+	//while( fgets(outfile,buffer,FASTA_MAXLINE) != NULL){
+	//	int count=0;
+	//}
+	//printf("finished\n");
+	//fclose(outfile);
+	//exit(1);
+	/* Clear nodeIDs */
+	for(i=0; i<numspec; i++){
+		for(j=0; j<MAX_STRAINS*max_name_length; j++){
+			nodeIDs[i][j]='\0';
+		}
+	}
+	int num_remaining=readInImputed(nodeIDs,MSAi,reference,max_name_length,length_of_MSA,start_of_MSA,end_of_MSA,ref_length,opt,numspec);
+	int* variant_sites = (int*)malloc(ref_length*sizeof(int));
+	for(i=0; i<ref_length; i++){
+		variant_sites[i]=-1;
+	}
+	findVariantSites(MSAi,ref_length,numspec,opt,variant_sites,reference);
+	free(variant_sites);
+	free(reference);
+	for(i=0; i<numspec; i++){
+		free(MSAi[i]);
+	}
+	free(MSAi);
 }

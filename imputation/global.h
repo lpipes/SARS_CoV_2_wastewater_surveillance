@@ -1,8 +1,9 @@
 #ifndef _GLOBAL_
 #define _GLOBAL_
 
+#define MAX_STRINGNUM 100
 #define MAX_NODENAME 100
-#define FASTA_MAXLINE 50000
+#define FASTA_MAXLINE 30000
 #define NUMCAT 1
 #define MINBL 0.000001
 #define MAXBL 2.0
@@ -12,6 +13,7 @@
 #define MAX_NODE_LIST 100000
 #define MAX_POLYTOMIES 100
 #define EPSILON 0.01
+#define MAX_STRAINS 10000
 typedef struct node{
 	int up[2];
 	int down;
@@ -28,8 +30,22 @@ typedef struct Options{
 	char outfile[MAXFILENAME];
 	char msa[MAXFILENAME];
 	char tree[MAXFILENAME];
+	char out_MSA[MAXFILENAME];
+	char variant[MAXFILENAME];
 	int common;
 	int limit;
 }Options;
+
+typedef struct blob{
+	char* key;
+	size_t data_len;
+	char* data;
+}blob;
+
+typedef struct specmap{
+	char* key;
+	size_t data_len;
+	int data;
+}specmap;
 
 #endif
