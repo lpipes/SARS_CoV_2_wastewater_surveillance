@@ -43,28 +43,21 @@ And the following variant sites file:
 	
 	eliminate_strains/global_variants.txt
 
-To impute and build a new database use `sarscov2_imputation` followed by `remove_redundant`.
+To impute and build a new database use `sarscov2_imputation`.
+
 
 	sarscov2_imputation [OPTIONS]
 	
-		-h, --help			usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]
-		-i, --MSA [REQUIRED]		multiple sequence alignment in FASTA format
-		-o, --outfile [REQUIRED]	imputed output file in FASTA format
-		-t, --tree			phylogenetic tree in Newick format
-		-c, --common_allele		impute with the most common allele (no tree required)
-		-l, --limit			limit of leaf nodes within a clade [default:10000]
-
-	remove_redundant [OPTIONS]
+		-h, --help						usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]
+		-i, --MSA [INFILE, REQUIRED]				multiple sequence alignment in FASTA format
+		-m, --final [OUTFILE, REQUIRED if tree imputation]	final out file
+		-o, --outfile [OUTFILE, REQUIRED]			imputed output file in FASTA format
+		-t, --tree [OUTFILE, REQUIRED if tree imputation]	rooted phylogenetic tree in Newick format
+		-c, --common_allele					impute with the most common allele (no tree required)
+		-l, --limit [INT]					limit of leaf nodes within a clade [default:10000]
+		-v, --variants [OUTFILE, REQUIRED if tree imputation]	file to print variants
 	
-		-h, --help				usage: -i [Input MSA FASTA]
-		-i, --infile [REQUIRED]			MSA FASTA
-		-v, --variant_sites [REQUIRED]		variant sites file to print
-		-r, --remove_identical			remove identical sequences
-		-o, --out_MSA [REQUIRED]		out MSA
-		-p, --print_variant_sites		print variant sites
-		-f, --reference_pos [REQUIRED]		print reference positions
-
-`sarscov2_imputation` and `remove_redundant` uses <a href="https://github.com/DavidLeeds/hashmap">David Leeds' hashmap</a>.
+`sarscov2_imputation` uses <a href="https://github.com/DavidLeeds/hashmap">David Leeds' hashmap</a>.
 
 # Performance
 <img src="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance/blob/main/single_end_300bp.png?raw=true">
