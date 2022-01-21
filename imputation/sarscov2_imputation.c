@@ -1319,8 +1319,8 @@ int main(int argc, char **argv){
 	int i,j, k, l;
 	char **nodeIDs = (char**)malloc(numspec*sizeof(char*));
 	for(i=0; i<numspec; i++){
-		nodeIDs[i] = malloc(MAX_STRAINS*max_name_length*sizeof(char));
-		for(j=0; j<MAX_STRAINS*max_name_length; j++){
+		nodeIDs[i] = malloc((MAX_STRAINS+max_name_length)*sizeof(char));
+		for(j=0; j<(MAX_STRAINS+max_name_length); j++){
 			nodeIDs[i][j]='\0';
 		}
 	}
@@ -1615,7 +1615,7 @@ int main(int argc, char **argv){
 	//exit(1);
 	/* Clear nodeIDs */
 	for(i=0; i<numspec; i++){
-		for(j=0; j<MAX_STRAINS*max_name_length; j++){
+		for(j=0; j<(MAX_STRAINS+max_name_length); j++){
 			nodeIDs[i][j]='\0';
 		}
 	}
@@ -1629,6 +1629,8 @@ int main(int argc, char **argv){
 	free(reference);
 	for(i=0; i<numspec; i++){
 		free(MSAi[i]);
+		free(nodeIDs[i]);
 	}
 	free(MSAi);
+	free(nodeIDs);
 }

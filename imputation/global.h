@@ -13,7 +13,7 @@
 #define MAX_NODE_LIST 100000
 #define MAX_POLYTOMIES 100
 #define EPSILON 0.01
-#define MAX_STRAINS 10000
+#define MAX_STRAINS 30000
 typedef struct node{
 	int up[2];
 	int down;
