@@ -1,3 +1,12 @@
 '''
 This is the code for web application.
+
+1. Files under ./templates are the .html files.
+Please make changes to index.html(serves as the basic web page for users to upload files);
+submit.html(users will be redirected to this web page after successfully submitting files).
+
+2. To edit the subject and content of the output email:
+Please edit "content" in line 108 in __init__.py.
+Please edit "subject" in line 112 in __init__.py.
+
 '''
