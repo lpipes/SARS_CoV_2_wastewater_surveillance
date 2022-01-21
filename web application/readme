@@ -1,6 +1,8 @@
 '''
 This is the code for web application.
 
+Remember to change uploaded_path to the directory that you store this code.
+
 1. Files under ./templates are the .html files.
 Please make changes to index.html(serves as the basic web page for users to upload files);
 submit.html(users will be redirected to this web page after successfully submitting files).
