@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Waste Water Surveillance</title>
+    <title>SARS-CoV-2 Wastewater Surveillance</title>
 
     <meta charset="UTF-8"/>
 
@@ -61,7 +61,7 @@
 						<div data-v-12103866 class="into">
 							<div data-v-12103866 class="columns">
 								<div data-v-12103866 class="full-title">
-									<h2 align="center" data-v-12103866>Waste Water Surveillance
+									<h2 align="center" data-v-12103866>SARS-CoV-2 Wastewater Surveillance
 									<br data-v-12103866>
 						<!-- Upload File -->
 									</h2>
@@ -76,7 +76,11 @@
 					
 				</div>
 					
-				<h3 data-v-12103866>Please choose your reads: </h3>
+				    <h3>Please enter an email to send the results to</h3>
+				    <label>Email adress: </label>
+				    <input class="input" type="text" name="email" placeholder="Email"/>
+				    <br><br>
+				<h3 data-v-12103866>Are you using paired-end reads?</h3>
 
 				<form method="POST" enctype="multipart/form-data">
 				    <label>Paired Reads: </label>
@@ -86,18 +90,13 @@
 				    <label onclick="changeUploads('two')"><input name="paired_reads" type="radio" value="no"
 				                                                 placeholder="paired reads"/>no</label>
 				  
+					<h3>Parameters</h>
 
-				    <h3>Please enter your email and parameters: </h3>
-				
-				    <label>Email: </label>
-				    <input class="input" type="text" name="email" placeholder="E-mail"/>
-				    <br><br>
-
-				    <label>Frequency(0.01 recommended): </label>
+				    <label>Allele frequency threshold (Optional, default=0.01): </label>
 				    <input class="input" type="text" name="frequency" placeholder="frequency"/>
 				    <br><br>
 
-				    <label>EM Error(0.005 recommended): </label>
+				    <label>EM Error (Optional, default=0.005): </label>
 				    <input class="input" type="text" name="EM_error" placeholder="EM error"/>
 				    <br><br>
 
