@@ -3,7 +3,7 @@ We present a method for estimating the relative proportions of SARS-CoV-2 strain
 
 View the preprint here: <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2</a>
 
-The method has 4 different components: imputation, redundancy removal, filtering unlikely strains, and running the EM algorithm. To estimate proportions of SARS-CoV-2 strains on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program.
+The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program.
 
 # Installation
 To install
