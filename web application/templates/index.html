@@ -61,13 +61,13 @@
 						<div data-v-12103866 class="into">
 							<div data-v-12103866 class="columns">
 								<div data-v-12103866 class="full-title">
-									<h2 align="center" data-v-12103866>SARS-CoV-2 Wastewater Surveillance
+									<h2 align="center" data-v-12103866>Estimate relative proportions of SARS-CoV-2 strains from wastewater
 									<br data-v-12103866>
 						<!-- Upload File -->
 									</h2>
 								</div>
 								<div data-v-12103866 class="logo" align="center">
-									<img src="static/coronavirus-g1250b6ca8_640.png" width="400" height="300" >
+									<img src="static/coronavirus-g1250b6ca8_640.png" width="400" height="200" >
 								</div>
 							</div>
 						</div>
@@ -75,7 +75,12 @@
 					</div>
 					
 				</div>
-				This is a method to estimate relative proportions of different SARS-CoV-2 strains. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022.	
+				This is a method to estimate relative proportions of different SARS-CoV-2 strains. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="metadata.csv">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>.
+				<br>
+				<br>
+				Enter your email and upload your sample. Your results will be emailed to you when the analysis has finished.
+				<br>
+				<br>
 				    <h3>Please enter an email to send the results to</h3>
 				    <label>Email adress: </label>
 				    <input class="input" type="text" name="email" placeholder="Email"/>
@@ -89,8 +94,10 @@
 				                                                 placeholder="paired reads"/>yes</label>
 				    <label onclick="changeUploads('two')"><input name="paired_reads" type="radio" value="no"
 				                                                 placeholder="paired reads"/>no</label>
-				  
-					<h3>Parameters</h>
+				    <br>
+				<br>
+				    <h3>Choose your parameters (Optional)</h3>
+						<br>
 
 				    <label>Allele frequency threshold (Optional, default=0.01): </label>
 				    <input class="input" type="text" name="frequency" placeholder="frequency"/>
@@ -100,7 +107,7 @@
 				    <input class="input" type="text" name="EM_error" placeholder="EM error"/>
 				    <br><br>
 
-				    <label>Coverage(Optional, Integer, default=50): </label>
+				    <label>Coverage required to calculate allele frequency (Optional, Integer, default=50): </label>
 				    <input class="input" type="text" name="coverage" placeholder="coverage"/>
 				   
 				    <ul class="uploads-ul">
@@ -125,7 +132,9 @@
 				    
 
 				</form>
-
+				<br>
+				<br>
+				Citation: Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>. 
 				
 			<!-- </div> -->
 		</section>
