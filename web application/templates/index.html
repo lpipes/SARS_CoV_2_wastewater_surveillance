@@ -61,7 +61,7 @@
 						<div data-v-12103866 class="into">
 							<div data-v-12103866 class="columns">
 								<div data-v-12103866 class="full-title">
-									<h2 align="center" data-v-12103866>Estimate relative proportions of SARS-CoV-2 strains from wastewater
+									<h2 align="center" data-v-12103866>Estimation of relative proportions of SARS-CoV-2 strains from environmental samples
 									<br data-v-12103866>
 						<!-- Upload File -->
 									</h2>
@@ -75,10 +75,10 @@
 					</div>
 					
 				</div>
-				This is a method to estimate relative proportions of different SARS-CoV-2 strains. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="metadata.csv">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>.
+				This website provides users a method for estimating relative proportions of different SARS-CoV-2 strains from environmental samples such as wastewater. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="metadata.csv">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>.
 				<br>
 				<br>
-				Enter your email and upload your sample. Your results will be emailed to you when the analysis has finished.
+				Enter your email and upload your sample in FASTA or FASTQ format. Sample reads should be quality filtered first and only contain possible SARS-CoV-2 sequences. Your results will be emailed to you when the analysis has finished.
 				<br>
 				<br>
 				    <h3>Please enter an email to send the results to</h3>
@@ -101,7 +101,7 @@
 				    <br>
 				    <br>
 				    <h3 data-v-12103866>Are you using paired-end reads?</h3>
-
+					<br>
 				<form method="POST" enctype="multipart/form-data">
 				    <label>Paired Reads: </label>
 		
@@ -109,7 +109,7 @@
 				                                                 placeholder="paired reads"/>yes</label>
 				    <label onclick="changeUploads('two')"><input name="paired_reads" type="radio" value="no"
 				                                                 placeholder="paired reads"/>no</label>
-				   
+				    <br> 
 				    <ul class="uploads-ul">
 				        <li class="uploads-one show-none">
 				            <p>Upload your SARS-CoV-2 single-end reads (FASTA or FASTQ only):</p>
@@ -134,8 +134,16 @@
 				</form>
 				<br>
 				<br>
-				Citation: Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>. 
-				
+				<b>Citation</b>: Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>. 
+				<br>
+				<br>
+				The method also uses the following programs which we also encourage users to cite.<br>
+				<br>
+				Bobb JF, Varadhan R. turboEM: A Suite of Convergence Acceleration Schemes for EM, MM and Other Fixed-Point
+				Algorithms; 2020, https://CRAN.R-project.org/package=turboEM, r package version 2020.1.<br>
+				<br>
+				Langmead B, Salzberg SL. Fast gapped-read alignment with Bowtie 2. Nature methods. 2012; 9(4):357–359.<br>
+				<br>
 			<!-- </div> -->
 		</section>
 	</main>
