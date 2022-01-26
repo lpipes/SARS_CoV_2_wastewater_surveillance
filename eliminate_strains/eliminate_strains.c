@@ -1496,16 +1496,23 @@ int main(int argc, char **argv){
 	opt.remove_identical=0;
 	opt.paired=0;
 	opt.error=0.005;
-	opt.coverage=1;
+	opt.coverage=50;
+	opt.fasta=0;
+	opt.freq=0.01;
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	if (opt.paired==1){
+	if (opt.paired==1 && opt.fasta==1){
 		sprintf(buffer,"bowtie2 --all -f -x %s -1 %s -2 %s -S %s",opt.bowtie_reference_db,opt.forward_end_file,opt.reverse_end_file,opt.sam);
-		//printf("%s\n",buffer);
 		system(buffer);
-	}else{
+	}else if (opt.paired==0 && opt.fasta==1){
 		sprintf(buffer,"bowtie2 --all -f -x %s -U %s -S %s",opt.bowtie_reference_db,opt.single_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==1 && opt.fasta==0){
+		sprintf(buffer,"bowtie2 --all -x %s -1 %s -2 %s -S %s",opt.bowtie_reference_db,opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==0 && opt.fasta==0){
+		sprintf(buffer,"bowtie2 --all -x %s -U %s -S %s",opt.bowtie_reference_db,opt.single_end_file,opt.sam);
 		system(buffer);
 	}
 	free(buffer);
@@ -1643,7 +1650,7 @@ int main(int argc, char **argv){
 	free(MSA);
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -l",opt.outfile,opt.freq);
+	sprintf(buffer,"Rscript EM_C_LLR.R %s %lf",opt.outfile,opt.freq);
 	system(buffer);
 	free(buffer);
 }

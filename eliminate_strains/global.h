@@ -13,6 +13,7 @@ typedef struct Options{
 	int remove_identical;
 	char variant[1000];
 	int paired;
+	int fasta;
 	char single_end_file[1000];
 	char forward_end_file[1000];
 	char reverse_end_file[1000];

@@ -15,24 +15,26 @@ static struct option long_options[]=
 	{"bowtie-db", required_argument, 0, 'd'},
 	{"EM-error",required_argument,0, 'e'},
 	{"coverage",required_argument,0,'c'},
+	{"fasta",no_argument,0,'a'},
 	{0,0,0,0}
 };
 
 char usage[] = "\neliminate_strains [OPTIONS]\n\
 	\n\
 	-h, --help				\n\
-	-i, --infile [REQUIRED]			MSA FASTA of SARS-CoV-2 reference strains\n\
-	-s, --samfile [REQUIRED]		output sam file to print alignments\n\
-	-f, --freq [REQUIRED]			allele frequency to filter unlikely strains\n\
-	-o, --outfile [REQUIRED]		output file to print mismatch matrix for EM algorithm\n\
-	-v, --variant_sites [REQUIRED]		list of variant sites\n\
-	-d, --bowtie-db [REQUIRED]		path to Wuhan-Hu-1 bowtie2 database\n\
+	-i, --infile [REQUIRED,FILE]		MSA FASTA of SARS-CoV-2 reference strains\n\
+	-s, --samfile [REQUIRED,FILE]		output sam file to print alignments\n\
+	-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]\n\
+	-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm\n\
+	-v, --variant_sites [REQUIRED,FILE]	list of variant sites\n\
+	-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database\n\
 	-p, --paired				using paired-reads\n\
-	-0, --single_end_file			single-end reads\n\
-	-1, --forward_file			if using paired-reads, the forward reads file\n\
-	-2, --reverse_file			if using paired-reads, the reverse reads file\n\
-	-e, --EM-error				error rate for EM algorithm\n\
-	-c, --coverage				number of reads needed to calculate allele freq [default: 1]\n\
+	-0, --single_end_file [FILE]		single-end reads\n\
+	-1, --forward_file [FILE]		if using paired-reads, the forward reads file\n\
+	-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file\n\
+	-e, --EM-error [decimal]		error rate for EM algorithm\n\
+	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]\n\
+	-a, --fasta				reads are in FASTA format [default: FASTQ]\n\
 	\n";
 
 void print_help_statement(){
@@ -48,7 +50,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hpi:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpai:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -62,6 +64,9 @@ void parse_options(int argc, char **argv, Options *opt){
 				break;
 			case 'p':
 				opt->paired=1;
+				break;
+			case 'a':
+				opt->fasta=1;
 				break;
 			case 'i':
 				success = sscanf(optarg, "%s", opt->fasta);
