@@ -75,7 +75,7 @@
 					</div>
 					
 				</div>
-					
+				This is a method to estimate relative proportions of different SARS-CoV-2 strains. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022.	
 				    <h3>Please enter an email to send the results to</h3>
 				    <label>Email adress: </label>
 				    <input class="input" type="text" name="email" placeholder="Email"/>
@@ -100,16 +100,16 @@
 				    <input class="input" type="text" name="EM_error" placeholder="EM error"/>
 				    <br><br>
 
-				    <label>Coverage(integer; 2 recommended): </label>
+				    <label>Coverage(Optional, Integer, default=50): </label>
 				    <input class="input" type="text" name="coverage" placeholder="coverage"/>
 				   
 				    <ul class="uploads-ul">
 				        <li class="uploads-one show-none">
-				            <p>Please upload a file(fasta;fastq;fa;txt only!):</p>
+				            <p>Upload your SARS-CoV-2 single-end reads (FASTA or FASTQ only):</p>
 				            <p><input type="file" name="file"></p>
 				        </li>
 				        <li class="uploads-two show-none">
-				            <p>Please upload two files(fasta;fastq;fa;txt only!):</p>
+				            <p>Upload your SARS-CoV-2 paired-end reads (FASTA or FASTQ only):</p>
 				            <p><input type="file" name="file1">Forward</p>
 				           
 				            <p><input type="file" name="file2">Reverse</p>
