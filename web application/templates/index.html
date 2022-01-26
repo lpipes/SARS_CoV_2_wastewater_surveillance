@@ -85,17 +85,6 @@
 				    <label>Email adress: </label>
 				    <input class="input" type="text" name="email" placeholder="Email"/>
 				    <br><br>
-				<h3 data-v-12103866>Are you using paired-end reads?</h3>
-
-				<form method="POST" enctype="multipart/form-data">
-				    <label>Paired Reads: </label>
-		
-				    <label onclick="changeUploads('one')"><input name="paired_reads" type="radio" value="yes"
-				                                                 placeholder="paired reads"/>yes</label>
-				    <label onclick="changeUploads('two')"><input name="paired_reads" type="radio" value="no"
-				                                                 placeholder="paired reads"/>no</label>
-				    <br>
-				<br>
 				    <h3>Choose your parameters (Optional)</h3>
 						<br>
 
@@ -109,6 +98,17 @@
 
 				    <label>Coverage required to calculate allele frequency (Optional, Integer, default=50): </label>
 				    <input class="input" type="text" name="coverage" placeholder="coverage"/>
+				    <br>
+				    <br>
+				    <h3 data-v-12103866>Are you using paired-end reads?</h3>
+
+				<form method="POST" enctype="multipart/form-data">
+				    <label>Paired Reads: </label>
+		
+				    <label onclick="changeUploads('one')"><input name="paired_reads" type="radio" value="yes"
+				                                                 placeholder="paired reads"/>yes</label>
+				    <label onclick="changeUploads('two')"><input name="paired_reads" type="radio" value="no"
+				                                                 placeholder="paired reads"/>no</label>
 				   
 				    <ul class="uploads-ul">
 				        <li class="uploads-one show-none">
