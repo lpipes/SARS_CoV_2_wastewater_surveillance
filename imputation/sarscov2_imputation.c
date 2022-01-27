@@ -9,6 +9,7 @@
 #include "hashmap.h"
 #include "math.h"
 #include "global.h"
+#include "options.h"
 
 int tip=0;
 int comma=0;
@@ -1280,28 +1281,6 @@ int main(int argc, char **argv){
 	opt.limit=10000;
 	parse_options(argc,argv,&opt);
 	struct timespec tstart={0,0}, tend={0.0};
-	//FILE* file;
-	//char buffer[FASTA_MAXLINE];
-	//int c;
-	//file=fopen("hello.fasta","r");
-	//if (file){
-	//	while ((c=getc(file)) != EOF )
-	//		putchar(c);
-	//	fclose(file);
-	//}
-	//ssize_t read;
-	//char *line = NULL;
-	//size_t len=0;
-	//while((read=getline(&line, &len, file))!= -1){
-	//	printf("%s",line);
-	//}
-	//if ((file=fopen("hello.fasta","r"))==NULL ){ puts("Cannot open MSA file!"); exit(-1);}
-	//while( fgets(file,buffer,FASTA_MAXLINE) != NULL){
-	//	int countt=0;
-	//}
-	//printf("finished");
-	//fclose(file);
-	//exit(1);
 	gzFile MSA_file = Z_NULL;
 	if ((MSA_file=gzopen(opt.msa,"r"))==Z_NULL ){ puts("Cannot open MSA file!"); exit(-1);}
 	int length_of_MSA=0;

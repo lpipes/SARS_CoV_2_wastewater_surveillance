@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <assert.h>
 #include "global.h"
+#include "options.h"
 
 int setMSALength(gzFile MSA_file){
 	char buffer [FASTA_MAXLINE];
@@ -1639,7 +1640,6 @@ int main(int argc, char **argv){
 	fclose(outfile);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fseconds\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
-	free(strains_kept);
 	//free(reference);
 	//free(variant_sites);
 	for(i=0; i<number_of_strains; i++){
@@ -1648,6 +1648,12 @@ int main(int argc, char **argv){
 	}
 	free(names_of_strains);
 	free(MSA);
+	if ( number_of_strains_remaining > 0 ){
+		free(strains_kept);
+	}else{
+		printf("No strains remaining exiting...\n");
+		exit(1);
+	}
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	sprintf(buffer,"Rscript EM_C_LLR.R %s %lf",opt.outfile,opt.freq);
