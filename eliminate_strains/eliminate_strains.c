@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <assert.h>
 #include "global.h"
+#include "options.h"
 
 int setMSALength(gzFile MSA_file){
 	char buffer [FASTA_MAXLINE];
@@ -198,6 +199,25 @@ int removeIdenticalStrains(int number_of_strains, int length_of_MSA, int** MSA, 
 	}
 	free(identical2);
 	return number_of_strains-number_of_identical_strains;
+}
+
+int dec2bin( int n){
+	int binaryNum[32];
+	int i=0;
+	while(n>0){
+		binaryNum[i] = n%2;
+		n = n/2;
+		i++;
+	}
+	if (binaryNum[2]==1){
+		return -1;
+	}else if ( binaryNum[3]==1){
+		//unpaired
+		return 2;
+	}else{
+		//if 1 this is first pair, if 0 this is second pair
+		return binaryNum[6];
+	}
 }
 
 int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage){
@@ -875,25 +895,6 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 	}
 	printf("Number of strains remaining is %d\n",number_remaining);
 	return number_remaining;
-}
-
-int dec2bin( int n){
-	int binaryNum[32];
-	int i=0;
-	while(n>0){
-		binaryNum[i] = n%2;
-		n = n/2;
-		i++;
-	}
-	if (binaryNum[2]==1){
-		return -1;
-	}else if ( binaryNum[3]==1){
-		//unpaired
-		return 2;
-	}else{
-		//if 1 this is first pair, if 0 this is second pair
-		return binaryNum[6];
-	}
 }
 
 void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining, char** names_of_strains){
