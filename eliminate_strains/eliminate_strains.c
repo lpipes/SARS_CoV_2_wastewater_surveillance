@@ -1497,21 +1497,21 @@ int main(int argc, char **argv){
 	opt.paired=0;
 	opt.error=0.005;
 	opt.coverage=50;
-	opt.fasta=0;
+	opt.fasta_format=0;
 	opt.freq=0.01;
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	if (opt.paired==1 && opt.fasta==1){
+	if (opt.paired==1 && opt.fasta_format==1){
 		sprintf(buffer,"bowtie2 --all -f -x %s -1 %s -2 %s -S %s",opt.bowtie_reference_db,opt.forward_end_file,opt.reverse_end_file,opt.sam);
 		system(buffer);
-	}else if (opt.paired==0 && opt.fasta==1){
+	}else if (opt.paired==0 && opt.fasta_format==1){
 		sprintf(buffer,"bowtie2 --all -f -x %s -U %s -S %s",opt.bowtie_reference_db,opt.single_end_file,opt.sam);
 		system(buffer);
-	}else if (opt.paired==1 && opt.fasta==0){
+	}else if (opt.paired==1 && opt.fasta_format==0){
 		sprintf(buffer,"bowtie2 --all -x %s -1 %s -2 %s -S %s",opt.bowtie_reference_db,opt.forward_end_file,opt.reverse_end_file,opt.sam);
 		system(buffer);
-	}else if (opt.paired==0 && opt.fasta==0){
+	}else if (opt.paired==0 && opt.fasta_format==0){
 		sprintf(buffer,"bowtie2 --all -x %s -U %s -S %s",opt.bowtie_reference_db,opt.single_end_file,opt.sam);
 		system(buffer);
 	}

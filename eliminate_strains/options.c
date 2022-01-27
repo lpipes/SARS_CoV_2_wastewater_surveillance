@@ -66,7 +66,7 @@ void parse_options(int argc, char **argv, Options *opt){
 				opt->paired=1;
 				break;
 			case 'a':
-				opt->fasta=1;
+				opt->fasta_format=1;
 				break;
 			case 'i':
 				success = sscanf(optarg, "%s", opt->fasta);

@@ -3,7 +3,7 @@ We present a method for estimating the relative proportions of SARS-CoV-2 strain
 
 View the preprint here: <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2</a>
 
-The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program.
+The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program. <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must be installed and in your path.
 
 # Installation
 To install
@@ -20,18 +20,19 @@ To install
 	eliminate_strains [OPTIONS]
 	
 	-h, --help				
-	-i, --infile [REQUIRED]			MSA FASTA of SARS-CoV-2 reference strains
-	-s, --samfile [REQUIRED]		output sam file to print alignments
-	-f, --freq [REQUIRED]			allele frequency to filter unlikely strains
-	-o, --outfile [REQUIRED]		output file to print mismatch matrix for EM algorithm
-	-v, --variant_sites [REQUIRED]		list of variant sites
-	-d, --bowtie-db [REQUIRED]		path to Wuhan-Hu-1 bowtie2 database
+	-i, --infile [REQUIRED,FILE]		MSA FASTA of SARS-CoV-2 reference strains
+	-s, --samfile [REQUIRED,FILE]		output sam file to print alignments
+	-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]
+	-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm
+	-v, --variant_sites [REQUIRED,FILE]	list of variant sites
+	-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database
 	-p, --paired				using paired-reads
-	-0, --single_end_file			single-end reads
-	-1, --forward_file			if using paired-reads, the forward reads file
-	-2, --reverse_file			if using paired-reads, the reverse reads file
-	-e, --EM-error				error rate for EM algorithm
-	-c, --coverage				number of reads needed to calculate allele freq [default: 1]
+	-0, --single_end_file [FILE]		single-end reads
+	-1, --forward_file [FILE]		if using paired-reads, the forward reads file
+	-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file
+	-e, --EM-error [decimal]		error rate for EM algorithm
+	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]
+	-a, --fasta				reads are in FASTA format [default: FASTQ]
 	
 To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
 	
