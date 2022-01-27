@@ -226,25 +226,29 @@ void setNumStrains(gzFile MSA_file, int* strain_info){
 }
 void readInMSA( gzFile MSA_file, int** MSA, int length_of_MSA){
 	char buffer [length_of_MSA+1];
+	int seq_idx=0;
 	int i=0;
-	int index=0;
+	int index=-1;
 	while( gzgets(MSA_file,buffer,length_of_MSA+1) != NULL ){
 		if ( buffer[0] != '>'){
 			int size = strlen(buffer);
 			for(i=0; i<size; i++){
 				if (buffer[i]=='A' || buffer[i]=='a'){
-					MSA[index][i]=0;
+					MSA[index][seq_idx]=0;
 				}else if ( buffer[i]=='C' || buffer[i]=='c'){
-					MSA[index][i]=1;
+					MSA[index][seq_idx]=1;
 				}else if (buffer[i]=='G' || buffer[i]=='g'){
-					MSA[index][i]=2;
+					MSA[index][seq_idx]=2;
 				}else if (buffer[i]=='T' || buffer[i]=='t'){
-					MSA[index][i]=3;
+					MSA[index][seq_idx]=3;
 				}else{
-					MSA[index][i]=4;
+					MSA[index][seq_idx]=4;
 				}
+				seq_idx++;
 			}
+		} else {
 			index++;
+			seq_idx=0;
 		}
 	}
 }
