@@ -1656,7 +1656,7 @@ int main(int argc, char **argv){
 	}
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	sprintf(buffer,"Rscript EM_C_LLR.R %s %lf",opt.outfile,opt.freq);
+	sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
 	system(buffer);
 	free(buffer);
 }
