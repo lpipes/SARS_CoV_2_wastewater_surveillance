@@ -75,34 +75,46 @@
 					</div>
 					
 				</div>
-				This website provides users a method for estimating relative proportions of different SARS-CoV-2 strains from environmental samples such as wastewater. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="metadata.csv">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>.
+				This website provides users a method for estimating relative proportions of different SARS-CoV-2 strains from environmental samples such as wastewater. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="{{url_for('download_metadata',filename='metadata.csv')}}">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>. To download the full reference database (15GB) click <a href="{{url_for('download_gz',filename='seqs_final_out.fasta.gz')}}">here</a> and to download the variants file used in our program click <a href="{{url_for('download_variants',filename='variants.txt')}}">here</a>.
+                <br>
 				<br>
 				<br>
 				Enter your email and upload your sample in FASTA or FASTQ format. Sample reads should be quality filtered first and only contain possible SARS-CoV-2 sequences. Your results will be emailed to you when the analysis has finished.
 				<br>
 				<br>
+
+                <form method="POST" enctype="multipart/form-data">
 				    <h3>Please enter an email to send the results to</h3>
+				    <br>
 				    <label>Email adress: </label>
 				    <input class="input" type="text" name="email" placeholder="Email"/>
 				    <br><br>
 				    <h3>Choose your parameters (Optional)</h3>
 						<br>
 
-				    <label>Allele frequency threshold (Optional, default=0.01): </label>
+				    <label>Allele frequency threshold (Optional, decimal, default=0.01): </label>
 				    <input class="input" type="text" name="frequency" placeholder="frequency"/>
 				    <br><br>
 
-				    <label>EM Error (Optional, default=0.005): </label>
+				    <label>EM Error (Optional, decimal, default=0.005): </label>
 				    <input class="input" type="text" name="EM_error" placeholder="EM error"/>
 				    <br><br>
 
 				    <label>Coverage required to calculate allele frequency (Optional, Integer, default=50): </label>
 				    <input class="input" type="text" name="coverage" placeholder="coverage"/>
 				    <br>
+                    <br>
+
+                    <h3>Please choose the format of your file:</h3>
+		    <br>
+                    <label><input name="filetype" type="radio" value="FASTA" placeholder="File Type"/>FASTA</label>
+                    <label><input name="filetype" type="radio" value="FASTQ" placeholder="File Type"/>FASTQ</label>
+                    <br>
 				    <br>
+
 				    <h3 data-v-12103866>Are you using paired-end reads?</h3>
 					<br>
-				<form method="POST" enctype="multipart/form-data">
+				
 				    <label>Paired Reads: </label>
 		
 				    <label onclick="changeUploads('one')"><input name="paired_reads" type="radio" value="yes"
