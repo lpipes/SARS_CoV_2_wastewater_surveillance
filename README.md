@@ -44,7 +44,6 @@ And the following variant sites file:
 
 To impute and build a new database use `sarscov2_imputation`.
 
-
 	sarscov2_imputation [OPTIONS]
 	
 		-h, --help						usage: -i [Input MSA FASTA] -o [Output file] -t [Tree file]
@@ -55,6 +54,7 @@ To impute and build a new database use `sarscov2_imputation`.
 		-c, --common_allele					impute with the most common allele (no tree required)
 		-l, --limit [INT]					limit of leaf nodes within a clade [default:10000]
 		-v, --variants [OUTFILE, REQUIRED if tree imputation]	file to print variants
+		-r, --redundant [OUTFILE, REQUIRED]			file to print redundant strains
 	
 `sarscov2_imputation` uses <a href="https://github.com/DavidLeeds/hashmap">David Leeds' hashmap</a>.
 

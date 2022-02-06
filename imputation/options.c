@@ -10,6 +10,7 @@ static struct option long_options[]=
 	{"outfile", optional_argument, 0, 'o'},
 	{"limit", optional_argument, 0, 'l'},
 	{"variants", required_argument, 0, 'v'},
+	{"redundant", required_argument, 0, 'r'},
 	{0,0,0,0}
 };
 
@@ -23,6 +24,7 @@ char usage[] = "\nsarscov2_imputation [OPTIONS]\n\
 	-c, --common_allele					impute with the most common allele (no tree required)\n\
 	-l, --limit [INT]					limit of leaf nodes within a clade [default:10000]\n\
 	-v, --variants [OUTFILE, REQUIRED if tree imputation]	file to print variants\n\
+	-r, --redundant [OUTFILE, REQUIRED]			file to print redundant strains\n\
 	\n";
 
 void print_help_statement(){
@@ -38,7 +40,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hci:t:o:l:v:m:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hci:t:o:l:v:m:r:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -64,6 +66,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->tree);
 				if (!success)
 					fprintf(stderr, "Invalid tree file\n");
+				break;
+			case 'r':
+				success = sscanf(optarg, "%s", opt->redundant);
+				if (!success)
+					fprintf(stderr, "Invalid redundant file\n");
 				break;
 			case 'o':
 				success = sscanf(optarg, "%s", opt->outfile);

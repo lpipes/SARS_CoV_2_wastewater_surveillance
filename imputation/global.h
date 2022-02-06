@@ -13,7 +13,6 @@
 #define MAX_NODE_LIST 100000
 #define MAX_POLYTOMIES 100
 #define EPSILON 0.01
-#define MAX_STRAINS 30000
 typedef struct node{
 	int up[2];
 	int down;
@@ -32,6 +31,7 @@ typedef struct Options{
 	char tree[MAXFILENAME];
 	char out_MSA[MAXFILENAME];
 	char variant[MAXFILENAME];
+	char redundant[MAXFILENAME];
 	int common;
 	int limit;
 }Options;
