@@ -50,7 +50,9 @@
 	<header data-v-7fa79948>
 		<h1 data-v-7fa79948>
 			<img src='static/primarylogo.png' width="200" >
+				
 		</h1>
+	<a href="https://jetstream-cloud.org/"><img src='static/Jetstream_web.png' width="150" align="right"></a>
 	</header>
 
 	<main data-v-7fa79948>
@@ -75,8 +77,7 @@
 					</div>
 					
 				</div>
-				This website provides users a method for estimating relative proportions of different SARS-CoV-2 strains from environmental samples such as wastewater. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample. The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. Download a full list of the strains used in this analysis <a href="{{url_for('download_metadata',filename='metadata.csv')}}">here</a> and view the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>. To download a list of redundant strains click <a href="{{url_for('download_redundant',filename='redundant.txt')}">here</a>. To download the full imputed reference database (10GB) click <a href="{{url_for('download_gz',filename='seqs_final_out.fasta.gz')}}">here</a> and to download the variants file used in our program click <a href="{{url_for('download_variants',filename='variants.txt')}}">here</a>.
-                <br>
+				This website provides users a method for estimating relative proportions of different SARS-CoV-2 strains from environmental samples such as wastewater. The method uses an initial step to remove unlikely strains from a database of greater than 4 million possible strains given an allelic frequency threshold. Then, an Expectation-Maximization algorithm is used for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 				<br>
 				<br>
 				Enter your email and upload your sample in FASTA or FASTQ format. Sample reads should be quality filtered first and only contain possible SARS-CoV-2 sequences. Your results will be emailed to you when the analysis has finished.
@@ -144,6 +145,34 @@
 				    
 
 				</form>
+		<br>
+		<br>
+		<br>
+		The current database is based on <a href="http://gisaid.org">GISAID</a>'s strains of global phylogeny posted on January 20, 2022. View the source code <a href="https://github.com/lpipes/SARS_CoV_2_wastewater_surveillance">here</a>. Download files used in this analysis:
+		<br>
+		<br>
+		<center>
+		<body>
+			<table border="1">
+				<tr>
+					<td>Full list of reference strains</td>
+					<td><a href="{{url_for('download_metadata',filename='metadata.csv')}}">metadata.csv</a></td>
+				</tr>
+				<tr>
+					<td>List of redundant strains</td>
+					<td><a href="{{url_for('download_redundant',filename='redundant.txt')}}">redundant.txt</a></td>
+				</tr>
+				<tr>
+					<td>Variant sites</td>
+					<td><a href="{{url_for('download_variants',filename='variants.txt')}}">variants.txt</a></td>
+				</tr>
+				<tr>
+					<td>Full imputed reference database (10GB)</td>
+					<td><a href="{{url_for('download_gz',filename='seqs_final_out.fasta.gz')}}">seqs_final_out.fasta.gz</a></td>
+				</tr>
+			</table>
+		</body>
+		</center>
 				<br>
 				<br>
 				<b>Citation</b>: Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>. 

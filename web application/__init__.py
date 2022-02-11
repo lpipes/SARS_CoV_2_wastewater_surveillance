@@ -7,7 +7,7 @@ import shutil
 import time
 
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, send_file
 from flask_uploads import UploadSet, configure_uploads, FASTAS, patch_request_class
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
@@ -25,51 +25,47 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 # app = Flask(__name__, template_folder='../templates', static_folder='../static')
 # set the uploaded file to application's path
 uploaded_path = '/var/www/FlaskApp/FlaskApp'
-
+# uploaded_path = 'D:/study/professor/lenore/web_test'
 # uploaded_path = os.getcwd()
-# set up the path for uploading files
 app.config['SECRET_KEY'] = 'Waste Water Surveillance'
 app.config['UPLOADED_FASTAS_DEST'] = os.path.join(uploaded_path, 'uploaded_file')
 # app.config['UPLOADED_FASTAS_DEST'] = os.getcwd() + '/uploaded_file'
 app.config['UPLOADED_FASTAS_URL'] = os.path.join(uploaded_path, 'uploaded_file')
 # app.config['UPLOADED_FASTAS_URL'] = os.getcwd() + '/uploaded_file'
-
-# set up the file format(.fasta .fastq .txt .fa)
 app.config['UPLOADED_FASTAS_ALLOW'] = set(['fas'])
 
 # email address settings
 app.config.update(dict(
     DEBUG=True,
-    MAIL_SERVER="smtp.163.com",
+    MAIL_SERVER="smtp.gmail.com",
     # MAIL_PORT=587,
     # MAIL_USE_TLS=True,
     MAIL_PORT=465,  # 163--465
     MAIL_USE_SSL=True,
     MAIL_USE_TLS=False,
-    MAIL_USERNAME="sars_cov2@163.com",   # my email address
-    MAIL_PASSWORD="BZIXVTMTZUDTGVWL",          # this is the authorization code for the host
-    MAIL_DEFAULT_SENDER=("sars_cov2@163.com"),  # defult sending address
+    MAIL_USERNAME="sarscov2.wastewater.project@gmail.com",   # my email address
+    MAIL_PASSWORD="eY5oP3fO5dB1cP3p",          # my email password
+    MAIL_DEFAULT_SENDER=("sarscov2.wastewater.project@gmail.com"),  # defult sending address
     MAIL_DEBUG=True,
 ))
 
 # create a mail application
-# mail = Mail(app)   
+mail = Mail(app)   
 
-# set up the file format(.fasta .fastq .txt .fa)
 fastas = UploadSet('fastas', FASTAS)
 configure_uploads(app, fastas)
-# set the base directory for uploaded files
+# set the base directory
 base_dir = os.path.join(uploaded_path, 'uploaded_file')
 # base_dir = os.getcwd() + '/uploaded_file'
 user_dir = ''
 cmd = ''
 paired_reads = ''
 email = ''
+task_finished = False
 
-# test if the files are in allowed format
 def file_validators(filename:str)->bool:
     try:
-        return filename.split('.')[-1] in ['txt','fasta','fastaq','fa']
+        return filename.split('.')[-1] in ['txt','fasta','fastq','fa']
     except:
         return False
 
@@ -77,70 +73,83 @@ def file_validators(filename:str)->bool:
 #     fasta = FileField(validators=[FileAllowed(fastas, u'fastas/txts/fastqs Only!'), FileRequired(u'Choose a file!')])
 #     submit = SubmitField(u'Upload')
 
-# the function for sending emails
 def send_email(user_dir,email):
-    # show the current user directory
-	print(user_dir)
+    global task_finished
+    print(user_dir)
+    output_list = os.listdir(user_dir)
+    print(output_list)
+    attachments = []
+    # get all the files to send
+    if 'mismerror.txt' in output_list:
+        error_file = os.path.join(user_dir,'mismerror.txt')
+        attachments.append(error_file)
+        if 'mismatch.txt' in output_list:
+            mismatch_file = os.path.join(user_dir,'mismatch.txt')
+            # attachments.append(mismatch_file)
+        content = 'No strains were retained. Please try increasing the coverage parameter.'		
+    else:
+        if 'mismUnidentifiable_Strains_mismatch.txt' in output_list:
+            unidentifiable_file = os.path.join(user_dir,'mismUnidentifiable_Strains_mismatch.txt')
+            # attachments.append(unidentifiable_file)
+        if 'mismem_output_mismatch.csv' in output_list:
+            csv_file = os.path.join(user_dir,'mismem_output_mismatch.csv')
+            attachments.append(csv_file)
+        if 'mismproportion_plot_mismatch.pdf' in output_list:
+            pdf_file = os.path.join(user_dir,'mismproportion_plot_mismatch.pdf')
+            attachments.append(pdf_file)
+        content = "Your results:"
 
-	# show the files in the directory
-	output_list = os.listdir(user_dir)
-	print(output_list)
+    # recipients = [email]
+    recipients = email
+    subject = 'SARS-CoV-2 wastewater surveillance results'
+    body = content
 
-	attachments = []
-	# get all the files to send
-	if 'mismerror.txt' in output_list:
-		error_file = os.path.join(user_dir,'mismerror.txt')
-		attachments.append(error_file)
-		if 'mismatch.txt' in output_list:
-			mismatch_file = os.path.join(user_dir,'mismatch.txt')
-			attachments.append(mismatch_file)
-		content = 'No strains were retained. Please try increasing the coverage.'		
-	else:
-		if 'mismUnidentifiable_Strains_mismatch.txt' in output_list:
-			unidentifiable_file = os.path.join(user_dir,'mismUnidentifiable_Strains_mismatch.txt')
-			attachments.append(unidentifiable_file)
-		if 'mismem_output_mismatch.csv' in output_list:
-			csv_file = os.path.join(user_dir,'mismem_output_mismatch.csv')
-			attachments.append(csv_file)
-		if 'mismproportion_plot_mismatch.pdf' in output_list:
-			pdf_file = os.path.join(user_dir,'mismproportion_plot_mismatch.pdf')
-			attachments.append(pdf_file)
-		content = "Here're your results:" # this is where you may edit the body of the email
-					
-	# recipients = [email]
-	recipients = email
-	subject = 'SARS_COV2_Waste_Water_Surveillance_Result' # this is where you may change the subject of the email
-	body = content
-
-	print(attachments)
-	msg = MIMEMultipart()
-	smtpHost = 'smtp.163.com'
-	sendAddr = 'sars_cov2@163.com'
-	password = 'YTKPXXRKISOTASSV'
-	msg['from'] = app.config['MAIL_USERNAME']
-	msg['to'] = recipients
-	msg['Subject'] = subject
-	txt = MIMEText(content, 'plain', 'utf-8')
-	msg.attach(txt)
-	for file in attachments:  # Add the attachment(output files)
-		filename = file
-		part = MIMEApplication(open(filename, 'rb').read())
-		part.add_header('Content-Disposition', 'attachment', filename=filename)
-		msg.attach(part)
-	server = smtplib.SMTP(smtpHost, 25)
+    print(attachments)
+    msg = MIMEMultipart()
+    smtpHost = 'smtp.gmail.com'
+    sendAddr = 'sarscov2.wastewater.project@gmail.com'
+    password = 'eY5oP3fO5dB1cP3p'
+    msg['from'] = app.config['MAIL_USERNAME']
+    msg['to'] = recipients
+    msg['Subject'] = subject
+    txt = MIMEText(content, 'plain', 'utf-8')
+    msg.attach(txt)
+    for file in attachments:  # Add the attachment(output files)
+        filename = file
+        part = MIMEApplication(open(filename, 'rb').read())
+        part.add_header('Content-Disposition', 'attachment', filename=filename)
+        msg.attach(part)
+    server = smtplib.SMTP(smtpHost, 587)
+    server.ehlo()
+    server.starttls()
     # server.set_debuglevel(1)  # can be used to check bugs
-	server.login(sendAddr, password)
-	server.sendmail(sendAddr, recipients, str(msg))
-	   # print("\n"+ str(len(filelist)) + "files are successfully sent!")
-	server.quit()
+    server.login(sendAddr, password)
+    server.sendmail(sendAddr, recipients, str(msg))
+        # print("\n"+ str(len(filelist)) + "files are successfully sent!")
+    server.quit()
+
+    # remove files after the email is successfully sent
+    remove_cmd = 'rm -rf ' + user_dir
+    os.system(remove_cmd)
+    # judge is the task is finished
+    task_finished = True
 
 
-def run__(request,email, frequency, paired_reads, EM_error, coverage,success=False,error=None):
+
+def run__(request,email, frequency, paired_reads, EM_error, coverage,option, success=False,error=None):
     global cmd
     global user_dir
     files_list = request.files.getlist('fasta')
         # for filename in request.files.getlist('fasta'):
         # when the user upload two files and chooses yes
+
+    # check if the uploaded file is FASTA
+    # if true: add -a to the command
+    if option:
+    	add_command = ' -a'
+    else:
+    	add_command = ''
+
     if paired_reads == 'yes':
         file1 = request.files.get('file1')
         file2 = request.files.get('file2')
@@ -148,7 +157,7 @@ def run__(request,email, frequency, paired_reads, EM_error, coverage,success=Fal
         if file_validators(file1.filename) and file_validators(file2.filename):
             success = True
             forward_name = "forward_" + file1.filename
-            print(forward_name)
+            # print(forward_name)
             fastas.save(file1, name=forward_name)
             reverse_name = "reverse_" + file2.filename
             fastas.save(file2, name=reverse_name)
@@ -159,6 +168,13 @@ def run__(request,email, frequency, paired_reads, EM_error, coverage,success=Fal
             shutil.copy(forward_dir, user_dir)
             shutil.copy(reverse_dir, user_dir)
 
+            remove_cmd_forward = 'rm ' + forward_dir
+            remove_cmd_reverse = 'rm ' + reverse_dir
+            os.system(remove_cmd_forward)
+            os.system(remove_cmd_reverse)
+            # os.remove(forward_dir)
+            # os.remove(reverse_dir)
+
                 # set the forward and reverse path for cmd
             forward_cmd = os.path.join(user_dir, forward_name)
             reverse_cmd = os.path.join(user_dir, reverse_name)
@@ -167,14 +183,15 @@ def run__(request,email, frequency, paired_reads, EM_error, coverage,success=Fal
                 # define the path for mismatch.txt
             mismatch_path = os.path.join(user_dir, 'mismatch.txt')
                 # turn to the index page before run the command
-            cmd = "/home/software/eliminate_strains/./eliminate_strains -i /home/database/msa_0730_filtered.fasta.gz " + \
-                      "-v /home/database/msa_0730_variants.txt " + \
+
+            cmd = "/home/software/eliminate_strains/./eliminate_strains -i /home/database/seqs_final_out.fasta.gz " + \
+                      "-v /home/database/variants.txt " + \
                       "-e " + EM_error + " " + \
                       "-f " + frequency + " " + \
                       "-o " + mismatch_path + " " \
                                               "-s " + alignment_path + " " \
                                                                        "-d /home/lenore/wuhCor1 -p -1 " + forward_cmd + ' ' \
-                                                                                                                        "-2 " + reverse_cmd + " -c " + coverage
+                                                                                                                        "-2 " + reverse_cmd + " -c " + coverage + add_command
             print(cmd)
         else:
         	error='Please choose two files(fasta;fastq;fa;txt only)!'
@@ -191,6 +208,10 @@ def run__(request,email, frequency, paired_reads, EM_error, coverage,success=Fal
             fastas.save(file, name=filename)
             file_dir = os.path.join(base_dir, filename)
             shutil.copy(file_dir, user_dir)
+            remove_cmd = 'rm ' + file_dir
+            os.system(remove_cmd)
+            # os.remove(file_dir)
+
                 # define the path for alignment.sam
             alignment_path = os.path.join(user_dir, 'alignment.sam')
                 # define the path for mismatch.txt
@@ -198,13 +219,13 @@ def run__(request,email, frequency, paired_reads, EM_error, coverage,success=Fal
                 # turn to the index page before run the command
 
             file_cmd = os.path.join(user_dir, filename)
-            cmd = "/home/software/eliminate_strains/./eliminate_strains -i /home/database/msa_0730_filtered.fasta.gz " + \
-                      "-v /home/database/msa_0730_variants.txt " + \
+            cmd = "/home/software/eliminate_strains/./eliminate_strains -i /home/database/seqs_final_out.fasta.gz " + \
+                      "-v /home/database/variants.txt " + \
                       "-e " + EM_error + " " + \
                       "-f " + frequency + " " + \
                       "-o " + mismatch_path + " " \
                                               "-s " + alignment_path + " " \
-                                                                       "-d /home/lenore/wuhCor1 -0 " + file_cmd + " -c " + coverage
+                                                                       "-d /home/lenore/wuhCor1 -0 " + file_cmd + " -c " + coverage + add_command
             print(cmd)
         else:
         	error='Please choose a file(fasta;fastq;fa;txt only)!'
@@ -232,8 +253,14 @@ def upload_file():
         if request.form['coverage']:
             coverage = request.form['coverage']
         else:
-            coverage = '2'
-        print(email, frequency, paired_reads, EM_error, coverage)  # get all the needed info
+            coverage = '50'
+        if request.form['filetype']:
+        	filetype = request.form['filetype']
+        	if filetype == 'FASTA':
+        		option = True
+        	else:
+        		option = False
+        print(email, frequency, paired_reads, EM_error, coverage, option)  # get all the needed info
 
         # set the number of files
         count = random.randint(100000, 1000000)
@@ -250,7 +277,7 @@ def upload_file():
             os.mkdir(user_dir)
         else:
             os.mkdir(user_dir)
-        success,error=run__(request,email, frequency, paired_reads, EM_error, coverage)
+        success,error=run__(request,email, frequency, paired_reads, EM_error, coverage, option)
         if not success:
             return render_template('index.html', success=success, error=error)
         elif success:
@@ -279,20 +306,23 @@ def run_command(cmd):
     ready = False
     global user_dir
     global email
+    global task_finished
     os.system(cmd)
+    # send_email(user_dir,email)
     # set a start time
 
     start = time.time()
     # this is the directory of mismatch.txt
     mismatch = os.path.join(user_dir,'mismatch.txt')
     mismerror = os.path.join(user_dir,'mismerror.txt')
+    pdf_file = os.path.join(user_dir,'mismproportion_plot_mismatch.pdf')
     # with open(mismatch,mode='w') as f:
     #     f.write('1')
     # with open(mismerror,mode='w') as f:
     #     f.write('1')
     # judge if the mismatch.txt is not none
     while not ready:
-        if os.path.exists(mismatch):
+        if os.path.exists(mismerror) or os.path.exists(pdf_file):
             send_email(user_dir,email)
             print('email done')
             ready = True
@@ -310,6 +340,27 @@ def run_command(cmd):
 
     print('email done')
     print(1 + 1)
+
+# download metadata.csv
+@app.route('/download_metadata/<filename>', methods=['GET'])
+def download_metadata(filename):
+	metadata_dir = uploaded_path
+	return send_from_directory(metadata_dir,filename, as_attachment=True)
+# download variants.txt
+@app.route('/download_variants/<filename>', methods=['GET'])
+def download_variants(filename):
+	variants_dir = '/home/database'
+	return send_from_directory(variants_dir,filename, as_attachment=True)
+# download *.gz
+@app.route('/download_gz/<filename>', methods=['GET'])
+def download_gz(filename):
+	gz_dir = '/home/database'
+	return send_from_directory(gz_dir,filename, as_attachment=True)
+# download redundant.txt
+@app.route('/download_redundant/<filename>', methods=['GET'])
+def download_redundant(filename):
+	redundant_dir = '/home/database'
+	return send_from_directory(redundant_dir,filename, as_attachment=True)
 
 
 if __name__ == '__main__':
