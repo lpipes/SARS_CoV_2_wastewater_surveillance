@@ -19,20 +19,21 @@ To install
 
 	eliminate_strains [OPTIONS]
 	
-	-h, --help				
-	-i, --infile [REQUIRED,FILE]		MSA FASTA of SARS-CoV-2 reference strains
-	-s, --samfile [REQUIRED,FILE]		output sam file to print alignments
-	-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]
-	-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm
-	-v, --variant_sites [REQUIRED,FILE]	list of variant sites
-	-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database
-	-p, --paired				using paired-reads
-	-0, --single_end_file [FILE]		single-end reads
-	-1, --forward_file [FILE]		if using paired-reads, the forward reads file
-	-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file
-	-e, --EM-error [decimal]		error rate for EM algorithm
-	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]
-	-a, --fasta				reads are in FASTA format [default: FASTQ]
+		-h, --help				
+		-i, --infile [REQUIRED,FILE]		MSA FASTA of SARS-CoV-2 reference strains
+		-s, --samfile [REQUIRED,FILE]		output sam file to print alignments
+		-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]
+		-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm
+		-v, --variant_sites [REQUIRED,FILE]	list of variant sites
+		-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database
+		-p, --paired				using paired-reads
+		-0, --single_end_file [FILE]		single-end reads
+		-1, --forward_file [FILE]		if using paired-reads, the forward reads file
+		-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file
+		-e, --EM-error [decimal]		error rate for EM algorithm
+		-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]
+		-a, --fasta				reads are in FASTA format [default: FASTQ]
+		-l, --llr				Perform the LLR procedure
 	
 To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
 	
