@@ -1500,6 +1500,7 @@ int main(int argc, char **argv){
 	opt.coverage=50;
 	opt.fasta_format=0;
 	opt.freq=0.01;
+	opt.llr=0;
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
@@ -1656,7 +1657,11 @@ int main(int argc, char **argv){
 	}
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
+	if (opt.llr==1){
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l",opt.outfile,opt.freq,opt.error);
+	}else{
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
+	}
 	system(buffer);
 	free(buffer);
 }

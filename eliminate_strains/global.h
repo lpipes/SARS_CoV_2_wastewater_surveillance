@@ -20,6 +20,7 @@ typedef struct Options{
 	char bowtie_reference_db[1000];
 	double error;
 	int coverage;
+	int llr;
 }Options;
 
 typedef struct blob{
