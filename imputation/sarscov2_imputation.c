@@ -9,6 +9,7 @@
 #include "hashmap.h"
 #include "math.h"
 #include "global.h"
+#include "options.h"
 
 int tip=0;
 int comma=0;
@@ -225,25 +226,29 @@ void setNumStrains(gzFile MSA_file, int* strain_info){
 }
 void readInMSA( gzFile MSA_file, int** MSA, int length_of_MSA){
 	char buffer [length_of_MSA+1];
+	int seq_idx=0;
 	int i=0;
-	int index=0;
+	int index=-1;
 	while( gzgets(MSA_file,buffer,length_of_MSA+1) != NULL ){
 		if ( buffer[0] != '>'){
 			int size = strlen(buffer);
 			for(i=0; i<size; i++){
 				if (buffer[i]=='A' || buffer[i]=='a'){
-					MSA[index][i]=0;
+					MSA[index][seq_idx]=0;
 				}else if ( buffer[i]=='C' || buffer[i]=='c'){
-					MSA[index][i]=1;
+					MSA[index][seq_idx]=1;
 				}else if (buffer[i]=='G' || buffer[i]=='g'){
-					MSA[index][i]=2;
+					MSA[index][seq_idx]=2;
 				}else if (buffer[i]=='T' || buffer[i]=='t'){
-					MSA[index][i]=3;
+					MSA[index][seq_idx]=3;
 				}else{
-					MSA[index][i]=4;
+					MSA[index][seq_idx]=4;
 				}
+				seq_idx++;
 			}
+		} else {
 			index++;
+			seq_idx=0;
 		}
 	}
 }
@@ -474,6 +479,28 @@ int readInNodes(gzFile MSA_file, char** nodeIDs, int length_of_MSA, /*struct blo
 	}
 	return ref_length;
 }
+void maketransitionmatrixnc(int n, double t, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5]){
+	int i, j, k;
+	double EXPOS[4];
+	for (k=0; k<4; k++){
+		EXPOS[k] = exp(t*RRVALnc[k]);
+		if ( EXPOS[k] < 0.000000 ){
+			printf("EXPOS[k]=%e\n",EXPOS[k]);
+		}
+		assert(EXPOS[k]>=0.000000);
+	}
+
+	for (i=0; i<4; i++)
+  {
+    for (j=0; j<4; j++)
+    {
+      PMATnc[n][i][j] = 0.0;
+      for (k=0; k<4; k++){
+		  PMATnc[n][i][j] =  PMATnc[n][i][j] + RRVECnc[k][j]*LRVECnc[i][k]*EXPOS[k];
+	  }
+	}
+  }
+}
 void makeconnc(node* tree, int node, int root,int numspec, int numbase,double lambda,int** seq, double* UFCnc, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5],  int number_of_leaves)
 
 {
@@ -599,28 +626,6 @@ void inittransitionmatrixnc(double pi[4], double par[10], double LRVECnc[4][4], 
 	}
   if (matinv(RRVECnc[0],4, 4, workspace) != 0)
     printf("Could not invert matrix!\nResults may not be reliable!\n");
-}
-void maketransitionmatrixnc(int n, double t, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4], double PMATnc[2][4][5]){
-	int i, j, k;
-	double EXPOS[4];
-	for (k=0; k<4; k++){
-		EXPOS[k] = exp(t*RRVALnc[k]);
-		if ( EXPOS[k] < 0.000000 ){
-			printf("EXPOS[k]=%e\n",EXPOS[k]);
-		}
-		assert(EXPOS[k]>=0.000000);
-	}
-
-	for (i=0; i<4; i++)
-  {
-    for (j=0; j<4; j++)
-    {
-      PMATnc[n][i][j] = 0.0;
-      for (k=0; k<4; k++){
-		  PMATnc[n][i][j] =  PMATnc[n][i][j] + RRVECnc[k][j]*LRVECnc[i][k]*EXPOS[k];
-	  }
-	}
-  }
 }
 double getlike_gamma(double parameters[], node* tree, int numspec, int numbase, int root, int** MSA, double LRVECnc[4][4], double RRVECnc[4][4], double RRVALnc[4],double PMATnc[2][4][5], int number_of_leaves){
   /*GTR + gamma model
