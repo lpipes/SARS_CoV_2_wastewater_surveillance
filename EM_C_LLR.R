@@ -216,6 +216,7 @@ for (ii in 1:length(p_tmp)){
 cat("\nLLR ", (proc.time() - ptm)[3],"\n")
 } else {
   LLR <- rep(NA,length(p))
+  too_large_flag <- rep(F,length(p))
 }
 
 
@@ -228,7 +229,9 @@ em_output_df <- em_output_df[order(em_output_df$p,decreasing = T),]
 em_output_df <- em_output_df[em_output_df$p>=opt$filter,]
 em_output_df$p <- em_output_df$p/sum(em_output_df$p)
 em_output_df$p <- round(em_output_df$p,digits = 3)
-em_output_df$p[em_output_df$too_large_flag] <- ">>100"
+em_output_df$LLR <- as.character(em_output_df$LLR)
+em_output_df$flag <- as.logical(em_output_df$flag)
+em_output_df$LLR[em_output_df$flag] <- ">>100"
 
 if (!is.null(opt$llr)){
   write.csv(em_output_df[,1:3], file = paste("./em_output_", opt$mismatch, ".csv", sep = ""),row.names = F)
