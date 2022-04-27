@@ -37,6 +37,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]\n\
 	-a, --fasta				reads are in FASTA format [default: FASTQ]\n\
 	-l, --llr				Perform the LLR procedure\n\
+	-b, --print-allele-counts		Print allele counts\n\
 	\n";
 
 void print_help_statement(){
@@ -52,7 +53,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplai:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hplabi:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -67,6 +68,8 @@ void parse_options(int argc, char **argv, Options *opt){
 			case 'p':
 				opt->paired=1;
 				break;
+			case 'b':
+				opt->print_counts=1;
 			case 'a':
 				opt->fasta_format=1;
 				break;

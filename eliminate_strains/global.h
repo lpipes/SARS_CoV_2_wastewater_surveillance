@@ -21,6 +21,7 @@ typedef struct Options{
 	double error;
 	int coverage;
 	int llr;
+	int print_counts;
 }Options;
 
 typedef struct blob{

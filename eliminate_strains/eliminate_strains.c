@@ -201,7 +201,7 @@ int removeIdenticalStrains(int number_of_strains, int length_of_MSA, int** MSA, 
 	return number_of_strains-number_of_identical_strains;
 }
 
-int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage){
+int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int print_counts){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -437,6 +437,15 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 		covered_sites[i]=-1;
 	}
 	int k=0;
+	if ( print_counts == 1 ){
+		FILE* allele_counts_file;
+		if (( allele_counts_file = fopen("allele_counts.txt","w")) == (FILE *) NULL ) fprintf(stderr, "Allele Counts file could not be opened.\n");	
+		fprintf(allele_counts_file,"position\tA\tG\tC\tT\n");
+		for(i=0; i<length_of_MSA; i++){
+			fprintf(allele_counts_file,"%d\t%lf\t%lf\t%lf\t%lf\n",i,allele[i][0],allele[i][1],allele[i][2],allele[i][3]);	
+		}
+		fclose(allele_counts_file);
+	}
 	for(i=0; i<length_of_MSA; i++){
 		double total=0;
 		for(j=0; j<4; j++){
@@ -598,7 +607,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 	return number_remaining;
 }
 
-int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage){
+int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int print_counts){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -695,6 +704,15 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 			}
 			free(buffer_copy);
 		}
+	}
+	if ( print_counts == 1 ){
+		FILE* allele_counts_file;
+		if (( allele_counts_file = fopen("allele_counts.txt","w")) == (FILE *) NULL ) fprintf(stderr, "Allele Counts file could not be opened.\n");	
+		fprintf(allele_counts_file,"position\tA\tG\tC\tT\n");
+		for(i=0; i<length_of_MSA; i++){
+			fprintf(allele_counts_file,"%d\t%lf\t%lf\t%lf\t%lf\n",i,allele[i][0],allele[i][1],allele[i][2],allele[i][3]);	
+		}
+		fclose(allele_counts_file);
 	}
 	int covered=0;
 	for(i=0; i<length_of_MSA; i++){
@@ -1501,6 +1519,7 @@ int main(int argc, char **argv){
 	opt.fasta_format=0;
 	opt.freq=0.01;
 	opt.llr=0;
+	opt.print_counts=0;
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
@@ -1609,9 +1628,9 @@ int main(int argc, char **argv){
 	}
 	int number_of_strains_remaining=0;
 	if ( opt.paired==1 ){
-		number_of_strains_remaining=calculateAlleleFreq_paired(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage);
+		number_of_strains_remaining=calculateAlleleFreq_paired(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,opt.print_counts);
 	}else{
-		number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage);
+		number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,opt.print_counts);
 	}
 	fclose(sam_file);
 	for(i=0; i<length_of_MSA; i++){
