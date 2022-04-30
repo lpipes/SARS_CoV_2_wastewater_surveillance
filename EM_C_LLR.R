@@ -38,7 +38,7 @@ if (!file.exists(opt$mismatch)) {
 
 # Read in data
 ptm <- proc.time()
-data <- read.table(opt$mismatch, header = T, sep = "\t")
+data <- read.table(opt$mismatch, header = T, sep = "\t",quote = "")
 cat("Loading matrices in from file", (proc.time() - ptm)[3])
 
 if (nrow(data) < 20) {
