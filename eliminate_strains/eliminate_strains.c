@@ -316,7 +316,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 						for(k=0; k<cigar_char_count; k++){
 							for(l=0; l<cigar[k]; l++){
 								if ( start_ref1 + first_seq_start_pos + j == start_ref2 + position + l){
-									if ( first_seq[start1 + j] != sequence[start2 + l] && first_seq_start_pos + j <= variant_sites[number_of_variant_sites-1]){
+									if ( first_seq[start1 + j] != sequence[start2 + l] && first_seq_cigar_chars[i] != 'D' && first_seq_cigar_chars[i] != 'I' && first_seq_start_pos + j <= variant_sites[number_of_variant_sites-1]){
 										if ( first_seq[start1+j]=='A' || first_seq[start1+j]=='a' ){
 											allele[start_ref1 + first_seq_start_pos + j][0]--;
 										}else if ( first_seq[start1+j]=='G' || first_seq[start1+j]=='g' ){
