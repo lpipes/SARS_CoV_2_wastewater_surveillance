@@ -17,6 +17,7 @@ static struct option long_options[]=
 	{"coverage",required_argument,0,'c'},
 	{"fasta",no_argument,0,'a'},
 	{"llr",no_argument,0,'l'},
+	{"print-allele-counts",required_argument,0,'b'},
 	{0,0,0,0}
 };
 
@@ -37,7 +38,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]\n\
 	-a, --fasta				reads are in FASTA format [default: FASTQ]\n\
 	-l, --llr				Perform the LLR procedure\n\
-	-b, --print-allele-counts		Print allele counts\n\
+	-b, --print-allele-counts [FILE]	Print allele counts to file\n\
 	\n";
 
 void print_help_statement(){
@@ -53,7 +54,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplabi:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hplab:i:s:f:o:v:0:1:2:d:e:c:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -69,7 +70,10 @@ void parse_options(int argc, char **argv, Options *opt){
 				opt->paired=1;
 				break;
 			case 'b':
-				opt->print_counts=1;
+				success = sscanf(optarg, "%s", opt->print_counts);
+				if (!success)
+					fprintf(stderr, "Invalid counts file\n");
+				break;
 			case 'a':
 				opt->fasta_format=1;
 				break;
