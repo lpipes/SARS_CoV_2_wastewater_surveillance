@@ -366,7 +366,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 							skip=1;
 						}
 					}
-					if ( cigar_chars[i] == 'M' || cigar_chars[i] == 'I'){
+					if ( cigar_chars[i] == 'M'){
 						if (sequence[j+start]=='A' || sequence[j+start]=='a'){
 							//if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
 							//	allele[reference[j+start_ref+position]][0]++;
@@ -396,6 +396,9 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 								allele[j+start_ref+position][3]++;
 							}
 						}
+						first_end_pos = j+start_ref+position;
+					}
+					if ( cigar_chars[i] == 'I' ){
 						first_end_pos = j+start_ref+position;
 					}
 				}
