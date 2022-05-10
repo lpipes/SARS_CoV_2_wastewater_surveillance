@@ -15,7 +15,7 @@ int setMSALength(gzFile MSA_file){
 	int iter=0;
 	while( gzgets(MSA_file,buffer,FASTA_MAXLINE) != NULL ){
 		if (buffer[0] != '>'){
-			for(i=0; buffer[i]!='\0'; i++){
+			for(i=0; buffer[i]!='\n'; i++){
 				length++;
 			}
 		}else if (iter==0){
