@@ -1,7 +1,7 @@
 #ifndef _GLOBAL_
 #define _GLOBAL_
 
-#define FASTA_MAXLINE 50000
+#define FASTA_MAXLINE 30000
 #define	MAX_CIGAR 1000
 #define MAX_READ_LENGTH 1000
 
@@ -21,6 +21,8 @@ typedef struct Options{
 	double error;
 	int coverage;
 	int llr;
+	int min_strains;
+	int max_strains;
 	char print_counts[1000];
 }Options;
 
