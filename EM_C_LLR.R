@@ -16,12 +16,16 @@ suppressMessages(library(CovidEM))
 suppressMessages(library(getopt))
 
 spec <- matrix(
-  c("mismatch",  "i", 2, "character", "Name of file containing the mismatch matrix. (This should be a TXT file.)",
+  c("mismatch",  "i", 2, "character", "Name of the file containing the mismatch matrix. (This should be a TXT file.)",
     "error_rate", "e", 1, "double",  "Assumed error rate in the EM algorithm (default = 0.005).",
     "filter",  "f", 2, "double",  "The allele frequency cut-off we used to remove ‘unlikely’ strains.",
-    "llr","l",0,"logical","Use this to perform the LLR procedure.",
+    "llr","l",0,"logical","Use this to perform the LLR procedure for each strain.",
     "num_show","n",1,"integer","Maximal number of strains to show in the plot (default = 10).",
-    "help", "h", 0, "logical",  "Show help."),
+    "help", "h", 0, "logical",  "Show help.",
+    "site_LLR","s",0,"logical", "Perform the LLR procedure for each site.",
+    "variant","v",1,"character" , "Name of the file containing variant sites.",
+    "read_count","b",1,"character", "Name of the file containing allele counts from reads.",
+    "ref_file","r",1,"character","MSA FASTA of SARS-CoV-2 reference strains."),
   byrow=TRUE, ncol=5)
 
 opt <- getopt(spec=spec)
@@ -31,6 +35,21 @@ if( !is.null(opt$help) || is.null(opt$mismatch) || is.null(opt$filter)){
   quit()
 }
 
+if (!is.null(opt$site_LLR)){
+  if (!file.exists(opt$variant)){
+    print("Please provide a file containing the variant sites")
+    quit()
+  }
+  if (!file.exists(opt$read_count)){
+    print("Please provide a file containing the allele counts from reads")
+    quit()
+  }
+  if (!file.exists(opt$ref_file)){
+    print("Please provide a MSA FASTA of SARS-CoV-2 reference strains")
+    quit()
+  }
+}
+
 if (!file.exists(opt$mismatch)) {
   print("No such file exists")
   quit()
@@ -38,7 +57,7 @@ if (!file.exists(opt$mismatch)) {
 
 # Read in data
 ptm <- proc.time()
-data <- read.table(opt$mismatch, header = T, sep = "\t",quote = "")
+data <- read.table(opt$mismatch, header = T, sep = "\t",quote = "",check.names = F)
 cat("Loading matrices in from file", (proc.time() - ptm)[3])
 
 if (nrow(data) < 20) {
@@ -94,6 +113,7 @@ if (k==1){
 # Mismatch matrix
 d_mtx <- data[, 3:ncol(data)]
 rownames(d_mtx) <- data[, 1]
+strain_name_copy <- data[,1]
 n_mtx <- matrix(rep(data[, 2], k), nrow = nrow(d_mtx), ncol = k)
 rownames(n_mtx) <- data[, 1]
 colnames(n_mtx) <- colnames(d_mtx)
@@ -163,7 +183,9 @@ if (length(uni.like) != length(loglikelihoods)) {
 cat("\nTime cost for finding unidentifiable strains: ", (proc.time() - ptm)[3])
 
 # EM Algorithm
+Q[Q==0] <- .Machine$double.xmin
 p0 <- colSums(Q)
+# p0 <- runif(ncol(Q))
 p0 <- p0 / sum(p0)
 options(digits = 13)
 
@@ -228,6 +250,7 @@ em_output_df$p <- as.numeric(em_output_df$p)
 em_output_df <- em_output_df[order(em_output_df$p,decreasing = T),]
 em_output_df <- em_output_df[em_output_df$p>=opt$filter,]
 em_output_df$p <- em_output_df$p/sum(em_output_df$p)
+p_forsite <- em_output_df$p
 em_output_df$p <- round(em_output_df$p,digits = 3)
 em_output_df$LLR <- as.character(em_output_df$LLR)
 em_output_df$flag <- as.logical(em_output_df$flag)
@@ -290,4 +313,101 @@ if (!is.null(opt$llr)){
 #         xlim = c(0,max(p)+0.1),col = "lightblue")
 print(prop_plot)
 dev.off()
+
+
+##### site LLR
+if (!is.null(opt$site_LLR)){
+  p <- read.csv(paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  ref <- readLines(opt$ref_file)
+  ref_name <- gsub(">","",ref[seq(1,length(ref),2)])
+  ref <- ref[seq(2,length(ref),2)]
+  names(ref) <- ref_name
+  un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
+  group_tmp <- which(str_detect(un_group,"Group"))
+  un_group_list <- vector("list",length(group_tmp))
+  for (u in 1:length(group_tmp)){
+    if (u!=length(group_tmp)){
+      un_group_list[[u]] <- un_group[(group_tmp[u]+1):(group_tmp[u+1]-1)]
+    } else {
+      un_group_list[[u]] <- un_group[(group_tmp[u]+1):length(un_group)]
+    }
+  }
+  
+  ref_allele <- matrix(0,nrow = nchar(ref[1]),ncol = 4,
+                       dimnames = list(1:nchar(ref[1]),
+                                       c("A","C","G","T")))
+  is_group <- str_detect(p$names.arg,"Group")
+  update_ref_allele <- function(x,t_p){
+    tmp <- c("A"=0,"C"=0,"G"=0,"T"=0)
+    tmp[x] <- t_p
+    tmp
+  }
+  for (t in p$names.arg[!is_group]){
+    t_seq <- str_split(ref[t],pattern = "")[[1]]
+    t_p <- p[p$names.arg==t,2]
+    t_tmp <- t(apply(rbind(t_seq),2,update_ref_allele,t_p=t_p))
+    ref_allele <- ref_allele+t_tmp
+  }
+  # save(ref_allele,file = "ref_allele.RData")
+  
+  un_p <- rep(0,nchar(ref[1]))
+  if(sum(is_group)!=0){
+    for (u in p$names.arg[is_group]){
+      p_u <- p[p$names.arg==u,2]
+      u <- substr(u,str_locate(u,"\\d")[1,1],nchar(u))
+      u <- as.numeric(u)
+      un_allele <- matrix(0,nrow = nchar(ref[1]),ncol = 4,
+                          dimnames = list(1:nchar(ref[1]),
+                                          c("A","C","G","T")))
+      for (t in un_group_list[[u]]){
+        t_seq <- str_split(ref[t],pattern = "")[[1]]
+        t_tmp <- t(apply(rbind(t_seq),2,update_ref_allele,t_p=1))
+        un_allele <- un_allele+t_tmp
+      }
+      for (l in 1:length(t_seq)){
+        ref_a <- colnames(ref_allele)[which.max(ref_allele[l,])]
+        if(sum(un_allele[l,]!=0)==1){
+          ref_allele[l,un_allele[l,]!=0] <- ref_allele[l,un_allele[l,]!=0]+p_u
+        } else {
+          un_p[l] <- un_p[l]+p_u
+        }
+      }
+    }
+  }
+  
+  
+  
+  read_allele <- read.table(opt$read_count,header = T,
+                            sep = "\t",row.names = 1)
+  site_LLR <- rep(NA,length(t_seq))
+  variant_site <- read.table(opt$variant)[-1,1]+1
+  for (l in variant_site){
+    if (sum(read_allele[l,])!=0){
+      ref_a <- colnames(ref_allele)[which.max(ref_allele[l,])]
+      nr <- read_allele[l,ref_a]
+      nm <- sum(read_allele[l,])-nr
+      f_hat <- min(ref_allele[l,ref_a],1)
+      f_mle <- (nr*(1-opt$error_rate/3)-nm*opt$error_rate/3)/(nr+nm)/(1-4*opt$error_rate/3)
+      f_mle <- max(min(f_mle,1),0)
+      if (nm==0){
+        p_hat <- f_hat*(1-opt$error_rate)+(1-f_hat)*opt$error_rate/3
+        p_mle <- f_mle*(1-opt$error_rate)+(1-f_mle)*opt$error_rate/3
+        p_hat2 <- (f_hat+un_p[l])*(1-opt$error_rate)+(1-f_hat-un_p[l])*opt$error_rate/3
+        site_LLR[l] <- min(nr * log(p_hat)-nr * log(p_mle),
+                           nr * log(p_hat2)-nr * log(p_mle))
+      } else {
+        # p_tmp <- sum(p[is_group,2])
+        p_hat <- f_hat*(1-opt$error_rate)+(1-f_hat)*opt$error_rate/3
+        p_mle <- f_mle*(1-opt$error_rate)+(1-f_mle)*opt$error_rate/3
+        p_hat2 <- (f_hat+un_p[l])*(1-opt$error_rate)+(1-f_hat-un_p[l])*opt$error_rate/3
+        site_LLR[l] <- min(nr * log(p_hat)+nm * log(1-p_hat)
+                           -nr * log(p_mle)-nm * log(1-p_mle),
+                           nr * log(p_hat2)+nm * log(1-p_hat2)
+                           -nr * log(p_mle)-nm * log(1-p_mle))
+      }
+    }
+  }
+  save(site_LLR,file = paste0("./site_LLR_",opt$mismatch,".RData"))
+}
+
 }
