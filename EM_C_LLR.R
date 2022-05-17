@@ -187,6 +187,8 @@ Q[Q==0] <- .Machine$double.xmin
 p0 <- colSums(Q)
 # p0 <- runif(ncol(Q))
 p0 <- p0 / sum(p0)
+p1 <- runif(ncol(Q))
+p1 <- p1 / sum(p1)
 options(digits = 13)
 
 # cl.cores = detectCores(logical = F)
@@ -197,10 +199,19 @@ ptm <- proc.time()
 res <- turboem(
   par = p0, fixptfn = EM, objfn = neg_logL, method = "squarem", y = Q, parallel = F,
   control.run = list(
-    convtype = "objfn", tol = 1.0e-7,
-    stoptype = "maxtime", maxtime = 10000
+    convtype = "parameter", tol = 1.0e-7,
+    stoptype = "maxtime", maxtime = 14400
   )
 )
+res2 <- turboem(
+  par = p1, fixptfn = EM, objfn = neg_logL, method = "squarem", y = Q, parallel = F,
+  control.run = list(
+    convtype = "parameter", tol = 1.0e-7,
+    stoptype = "maxtime", maxtime = 14400
+  )
+)
+cat(paste0("\nDifference between two optimazations from different starting points ",
+             signif(sum(abs(pars(res)-pars(res2)))),2))
 
 p <- pars(res)
 log.likelihood.with <- -neg_logL(p,Q)
