@@ -24,6 +24,7 @@ typedef struct Options{
 	int min_strains;
 	int max_strains;
 	char print_counts[1000];
+	char MSA_reference[1000];
 }Options;
 
 typedef struct blob{

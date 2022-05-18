@@ -20,6 +20,7 @@ static struct option long_options[]=
 	{"min",required_argument,0,'m'},
 	{"max",required_argument,0,'x'},
 	{"print-allele-counts",required_argument,0,'b'},
+	{"msa-reference",required_argument,0,'g'},
 	{0,0,0,0}
 };
 
@@ -43,6 +44,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-m, --min [decimal]			Minimum strains remaining to invoke iterative procedure [default: 100]\n\
 	-x, --max [decimal]			Maximum strains remaining for EM algorithm [default: 10000]\n\
 	-b, --print-allele-counts [FILE]	Print allele counts to file\n\
+	-g, --msa-reference [FILE]		MSA reference index\n\
 	\n";
 
 void print_help_statement(){
@@ -58,7 +60,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplai:s:f:o:v:0:1:2:d:e:c:m:x:b:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hplai:s:f:o:v:0:1:2:d:e:c:m:x:b:g:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -86,6 +88,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				break;
 			case 'i':
 				success = sscanf(optarg, "%s", opt->fasta);
+				if (!success)
+					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case 'g':
+				success = sscanf(optarg, "%s", opt->MSA_reference);
 				if (!success)
 					fprintf(stderr, "Invalid fasta file\n");
 				break;

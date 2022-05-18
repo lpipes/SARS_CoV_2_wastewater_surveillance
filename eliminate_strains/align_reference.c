@@ -3,14 +3,14 @@
 #include <string.h>
 #include "needleman_wunsch.h"
 #include "global.h"
-void align_references(int* ref_positions, int number_of_problematic_sites, int* problematic_sites){
+void align_references(int* ref_positions, int number_of_problematic_sites, int* problematic_sites, char MSA_reference[]){
 	FILE* Alignment_ref;
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	//Alignment_ref = fopen("/space/s1/lenore/virus_database/imputation/imputation_pipeline/01-25/EPI_ISL_402124.fasta","r");
 	//Alignment_ref = fopen("/space/s1/lenore/virus_database/imputation/imputation_pipeline/ucsc/EPI_ISL_402124.fasta","r");
-	Alignment_ref = fopen("MN908947.3.fasta","r");
+	Alignment_ref = fopen(MSA_reference,"r");
 	if (Alignment_ref == NULL){
 		printf("Error!");
 		exit(1);

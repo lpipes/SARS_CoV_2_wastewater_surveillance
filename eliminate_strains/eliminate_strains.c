@@ -1621,6 +1621,7 @@ int main(int argc, char **argv){
 	opt.min_strains=500;
 	opt.max_strains=10000;
 	memset(opt.print_counts,'\0',1000);
+	memset(opt.MSA_reference,'\0',1000);
 	parse_options(argc, argv, &opt);
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
@@ -1654,7 +1655,7 @@ int main(int argc, char **argv){
 	for(i=0; i<30000; i++){
 		reference_index[i]=0;
 	}
-	align_references(reference_index,number_of_problematic_sites,problematic_sites);
+	align_references(reference_index,number_of_problematic_sites,problematic_sites,opt.MSA_reference);
 	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int *strain_info = (int*)malloc(2*sizeof(int));
 	setNumStrains(MSA_file,strain_info);
