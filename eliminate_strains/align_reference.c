@@ -30,7 +30,7 @@ void align_references(int* ref_positions, int number_of_problematic_sites, int* 
 	FILE* Wuhan_file;
 	Wuhan_file = fopen("MN908947.3.fasta","r");
 	if (Wuhan_file == NULL){
-		printf("Error!");
+		printf("Error this one!");
 		exit(1);
 	}
 	char *Wuhan = (char*)malloc(30000*sizeof(char));

@@ -1290,7 +1290,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 								//}
 								if (MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
 									if ( position_in_MSA < length_of_MSA && skip==0){
-										number_of_mismatches[i]++;
+										//number_of_mismatches[i]++;
 									}
 								}
 							}
@@ -1789,9 +1789,9 @@ int main(int argc, char **argv){
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.llr==1){
-		sprintf(buffer,"Rscript /space/s1/lenore/virus_database/rewrite_elim/EM_C_LLR.R -i %s -f %lf -e %lf -l",opt.outfile,opt.freq,opt.error);
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l",opt.outfile,opt.freq,opt.error);
 	}else{
-		sprintf(buffer,"Rscript /space/s1/lenore/virus_database/rewrite_elim/EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
 	}
 	system(buffer);
 	free(buffer);
