@@ -344,7 +344,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 						int start_ref2=0;
 						for(k=0; k<cigar_char_count; k++){
 							for(l=0; l<cigar[k]; l++){
-								if ( position_in_MSA !=-1 && position_in_MSA == start_ref2 + position + l){
+								if ( position_in_MSA !=-1 && position_in_MSA == reference_index[start_ref2 + position + l] && cigar_chars[k] == 'M' && first_seq_cigar_chars[i] == 'M'){
 									if ( first_seq[start1 + j] != sequence[start2 + l] && first_seq_start_pos + j <= variant_sites[number_of_variant_sites-1]){
 										if ( first_seq[start1+j]=='A' || first_seq[start1+j]=='a' ){
 											allele[position_in_MSA][0]--;
@@ -404,9 +404,6 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 							//}
 							if ( position_in_MSA != -1 && position_in_MSA < length_of_MSA && skip==0){
 								allele[position_in_MSA][0]++;
-								if ( position_in_MSA==25351){
-									printf("%s\n",buffer);
-								}
 							}
 						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
 							//if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
