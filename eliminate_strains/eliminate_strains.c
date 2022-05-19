@@ -5,9 +5,14 @@
 #include <ctype.h>
 #include <zlib.h>
 #include <assert.h>
+#include <pthread.h>
 #include "global.h"
 #include "options.h"
 
+char** resize_MSA;
+char** resize_names_of_strains;
+int* reference_index;
+char** sam_results;
 int setMSALength(gzFile MSA_file){
 	char buffer [FASTA_MAXLINE];
 	int length = 0;
@@ -201,7 +206,7 @@ int removeIdenticalStrains(int number_of_strains, int length_of_MSA, int** MSA, 
 	return number_of_strains-number_of_identical_strains;
 }
 
-int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int* reference_index, int min_strains_remaining, int max_strains_remaining, char print_counts[]){
+int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int min_strains_remaining, int max_strains_remaining, char print_counts[], int* max_sam_length){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -229,7 +234,12 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 	}
 	while( fgets(buffer,FASTA_MAXLINE,sam) != NULL ){
 		if ( buffer[0] != '@'){
+			max_sam_length[1]++;
 			char* buffer_copy = strdup(buffer);
+			int length_of_sam = strlen(buffer);
+			if ( length_of_sam > max_sam_length[0] ){
+				max_sam_length[0]=length_of_sam;
+			}
 			s = strtok(buffer,"\t");
 			//char* name = strdup(s);
 			s = strtok(NULL,"\t");
@@ -394,6 +404,9 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 							//}
 							if ( position_in_MSA != -1 && position_in_MSA < length_of_MSA && skip==0){
 								allele[position_in_MSA][0]++;
+								if ( position_in_MSA==25351){
+									printf("%s\n",buffer);
+								}
 							}
 						}else if ( sequence[j+start]=='G' || sequence[j+start]=='g'){
 							//if ( reference[j+start_ref+position] < length_of_MSA && reference[j+start_ref+position] != -1){
@@ -587,6 +600,9 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 	int run_loop=1;
 	int number_of_iterations=1;
 	int* incompat_counter = (int*)malloc(number_of_strains*sizeof(int));
+	for(i=0; i<number_of_strains; i++){
+		incompat_counter[i]=0;
+	}
 	while(run_loop==1){
 		printf("iteration %d\n",number_of_iterations);
 		for(i=0; i<number_of_strains; i++){
@@ -679,6 +695,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 		}
 	}
 	printf("Number remaining: %d\n",number_remaining);
+	free(incompat_counter);
 	return number_remaining;
 }
 
@@ -990,8 +1007,15 @@ int dec2bin( int n){
 	}
 }
 
-void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining, char** names_of_strains, int* reference_index){
+void *writeMismatchMatrix_paired(void *ptr){
 	int i,j,k;
+	struct thread_struct *tstr = (thread_struct *) ptr;
+	resultsStruct *results=tstr->str;
+	int max_sam_length=tstr->max_sam_length;
+	int length_of_MSA=tstr->length_of_MSA;
+	int number_of_strains=tstr->number_of_strains;
+	int number_of_strains_remaining=tstr->number_of_strains_remaining;
+	int thread_number=tstr->thread_number;
 	char buffer [FASTA_MAXLINE];
 	char *s;
 	int cigar[MAX_CIGAR];
@@ -1001,11 +1025,6 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 		cigar_chars[i]='\0';
 	}
 	int* number_of_mismatches = (int *)malloc(number_of_strains_remaining*sizeof(int));
-	fprintf(outfile,"qName\tblockSizes");
-	for(i=0; i<number_of_strains_remaining; i++){
-		fprintf(outfile,"\t%s",names_of_strains[strains_kept[i]]);
-	}
-	fprintf(outfile,"\n");
 	int alignment_size;
 	int first_in_pair=0;
 	int second_in_pair=0;
@@ -1022,136 +1041,148 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 		visited[i]=-1;
 	}
 	int line_number=0;
-	while( fgets(buffer,FASTA_MAXLINE,samfile) != NULL ){
+	//while( fgets(buffer,FASTA_MAXLINE,samfile) != NULL ){
+	int line_count;
+	char* resultsPath = (char*)malloc((max_sam_length+300000)*sizeof(char));
+	int index_mismatch=0;
+	char* context=NULL;
+	for(line_count=tstr->start; line_count < tstr->end; line_count++){
 		line_number++;
-		if ( buffer[0] != '@'){
-			char* buffer_copy = strdup(buffer);
-			s = strtok(buffer,"\t");
-			char* name = strdup(s);
-			s = strtok(NULL, "\t");
-			int decimal=0;
-			sscanf(s, "%d", &decimal);
-			decimal=dec2bin(decimal);
-			if (decimal==1){
-				fprintf(outfile,"%s",name);
-				first_in_pair=1;
-			}else if (decimal==0){
-				second_in_pair=1;
+		char* buffer_copy = strdup(sam_results[line_count]);
+		s = strtok_r(sam_results[line_count],"\t",&context);
+		char* name = strdup(s);
+		s = strtok_r(NULL, "\t", &context);
+		int decimal=0;
+		sscanf(s, "%d", &decimal);
+		decimal=dec2bin(decimal);
+		if (decimal==1){
+			for(i=0; i<max_sam_length+300000; i++){
+				resultsPath[i]='\0';
 			}
-			if (decimal==2){
-				fprintf(outfile,"%s",name);
+			strcpy(resultsPath,name);
+			strcat(resultsPath,"\t");
+			first_in_pair=1;
+		}else if (decimal==0){
+			second_in_pair=1;
+		}
+		if (decimal==2){
+			for(i=0; i<max_sam_length+300000; i++){
+				resultsPath[i]='\0';
 			}
-			free(name);
-			for(i=0; i<2; i++){
-				s = strtok(NULL,"\t");
+			strcpy(resultsPath,name);
+			strcat(resultsPath,"\t");
+		}
+		free(name);
+		for(i=0; i<2; i++){
+			s = strtok_r(NULL,"\t",&context);
+		}
+		int position=0;
+		sscanf(s, "%d", &position);
+		position--;
+		if( first_in_pair == 1 ){
+			first_seq_start_pos = position;
+		}
+		s=strtok_r(NULL,"\t",&context);
+		s=strtok_r(NULL,"\t",&context);
+		char *cigar_string;
+		cigar_string = strdup(s);
+		char *copy = strdup(cigar_string);
+		char *res = strtok_r(cigar_string, "MID", &context);
+		int index=0;
+		while(res){
+			int from = res - cigar_string + strlen(res);
+			int cigar_count = 0;
+			sscanf(res, "%d", &cigar_count);
+			res = strtok_r ( NULL, "MID", &context);
+			int to = res != NULL ? res-cigar_string : strlen(copy);
+			char cigar_char = '\0';
+			sscanf(copy+from, "%c", &cigar_char);
+			cigar[index]=cigar_count;
+			if ( first_in_pair==1){
+				first_seq_cigar[index]=cigar_count;
 			}
-			int position=0;
-			sscanf(s, "%d", &position);
-			position--;
-			if( first_in_pair == 1 ){
-				first_seq_start_pos = position;
+			cigar_chars[index]=cigar_char;
+			if (first_in_pair==1){
+				first_seq_cigar_chars[index]=cigar_char;
 			}
-			s=strtok(NULL,"\t");
-			s=strtok(NULL,"\t");
-			char *cigar_string;
-			cigar_string = strdup(s);
-			char *copy = strdup(cigar_string);
-			char *res = strtok(cigar_string, "MID");
-			int index=0;
-			while(res){
-				int from = res - cigar_string + strlen(res);
-				int cigar_count = 0;
-				sscanf(res, "%d", &cigar_count);
-				res = strtok ( NULL, "MID");
-				int to = res != NULL ? res-cigar_string : strlen(copy);
-				char cigar_char = '\0';
-				sscanf(copy+from, "%c", &cigar_char);
-				cigar[index]=cigar_count;
-				if ( first_in_pair==1){
-					first_seq_cigar[index]=cigar_count;
-				}
-				cigar_chars[index]=cigar_char;
-				if (first_in_pair==1){
-					first_seq_cigar_chars[index]=cigar_char;
-				}
-				index++;
+			index++;
+		}
+		free(copy);
+		free(cigar_string);
+		s = strtok_r(buffer_copy,"\t",&context);
+		for(i=0; i<9; i++){
+			s = strtok_r(NULL,"\t",&context);
+		}
+		char* sequence = s;
+		if(first_in_pair==1){
+			strcpy(first_seq,sequence);
+			first_seq_cigar_char_count=index;
+		}
+		int cigar_char_count=index;
+		index=0;
+		int start=0;
+		int start_ref=0;
+		if (decimal==1 || decimal==2){
+			alignment_size=0;
+		}
+		if ( decimal==1 || decimal==2){
+			for(i=0; i<number_of_strains_remaining; i++){
+				number_of_mismatches[i] = 0;
 			}
-			free(copy);
-			free(cigar_string);
-			s = strtok(buffer_copy,"\t");
-			for(i=0; i<9; i++){
-				s = strtok(NULL,"\t");
-			}
-			char* sequence = s;
-			if(first_in_pair==1){
-				strcpy(first_seq,sequence);
-				first_seq_cigar_char_count=index;
-			}
-			int cigar_char_count=index;
-			index=0;
-			int start=0;
-			int start_ref=0;
-			if (decimal==1 || decimal==2){
-				alignment_size=0;
-			}
-			if ( decimal==1 || decimal==2){
+		}
+		int l=0;
+		int m=0;
+		if (decimal != -1){
+			visited_place=0;
+			if (second_in_pair==1){
+				int start_ref1=0;
+				int start1=0;
 				for(i=0; i<number_of_strains_remaining; i++){
-					number_of_mismatches[i] = 0;
-				}
-			}
-			int l=0;
-			int m=0;
-			if (decimal != -1){
-				visited_place=0;
-				if (second_in_pair==1){
-					int start_ref1=0;
-					int start1=0;
-					for(i=0; i<number_of_strains_remaining; i++){
-						visited_place=0;
-						start1=0;
-						start_ref1=0;
-						for(j=0; j<first_seq_cigar_char_count; j++){
-							for(k=0;k<first_seq_cigar[j]; k++){
-								int start2=0;
-								int start_ref2=0;
-								if (start_ref1 + first_seq_start_pos + k >= position){
-									for(l=0; l<cigar_char_count; l++){
-										int position_in_MSA = reference_index[start_ref1+first_seq_start_pos + k];
-										for(m=0; m<cigar[l]; m++){
-											if ( start_ref1 + first_seq_start_pos + k == start_ref2 + position + m && first_seq_cigar_chars[j]=='M'){
-												if ( cigar_chars[l] == 'M'){
-												if ( first_seq[start1 + k] != sequence[start2 + m] ){
-													if ( first_seq[start1+k]=='A' || first_seq[start1+k]=='a'){
-														if ( MSA[strains_kept[i]][position_in_MSA] != 'A' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0' ){
-															if ( position_in_MSA < length_of_MSA){
-																number_of_mismatches[i]--;
-																assert(number_of_mismatches[i] >= 0);
-															}
+					visited_place=0;
+					start1=0;
+					start_ref1=0;
+					for(j=0; j<first_seq_cigar_char_count; j++){
+						for(k=0;k<first_seq_cigar[j]; k++){
+							int start2=0;
+							int start_ref2=0;
+							if (start_ref1 + first_seq_start_pos + k >= position){
+								for(l=0; l<cigar_char_count; l++){
+									int position_in_MSA = reference_index[start_ref1+first_seq_start_pos + k];
+									for(m=0; m<cigar[l]; m++){
+										if ( start_ref1 + first_seq_start_pos + k == start_ref2 + position + m && first_seq_cigar_chars[j]=='M'){
+											if ( cigar_chars[l] == 'M'){
+											if ( first_seq[start1 + k] != sequence[start2 + m] ){
+												if ( first_seq[start1+k]=='A' || first_seq[start1+k]=='a'){
+													if ( resize_MSA[i][position_in_MSA] != 'A' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0' ){
+														if ( position_in_MSA < length_of_MSA){
+															number_of_mismatches[i]--;
+															assert(number_of_mismatches[i] >= 0);
 														}
-													}else if ( first_seq[start1+k]=='G' || first_seq[start1+k]=='g'){
-														if ( MSA[strains_kept[i]][position_in_MSA] != 'G' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0' ){
-															if ( position_in_MSA < length_of_MSA){
-																number_of_mismatches[i]--;
-																assert(number_of_mismatches[i] >= 0);
-															}
+													}
+												}else if ( first_seq[start1+k]=='G' || first_seq[start1+k]=='g'){
+													if ( resize_MSA[i][position_in_MSA] != 'G' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0' ){
+														if ( position_in_MSA < length_of_MSA){
+															number_of_mismatches[i]--;
+															assert(number_of_mismatches[i] >= 0);
 														}
-													}else if ( first_seq[start1+k]=='C' || first_seq[start1+k]=='c'){
-														if ( MSA[strains_kept[i]][position_in_MSA] != 'C' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0' ){
-															if ( position_in_MSA < length_of_MSA){
-																number_of_mismatches[i]--;
-																assert(number_of_mismatches[i] >= 0);
-															}
+													}
+												}else if ( first_seq[start1+k]=='C' || first_seq[start1+k]=='c'){
+													if ( resize_MSA[i][position_in_MSA] != 'C' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0' ){
+														if ( position_in_MSA < length_of_MSA){
+															number_of_mismatches[i]--;
+															assert(number_of_mismatches[i] >= 0);
 														}
-													}else if ( first_seq[start1+k]=='T' || first_seq[start1+k]=='t'){
-														if ( MSA[strains_kept[i]][position_in_MSA] != 'T' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0' ){
-															if ( position_in_MSA < length_of_MSA){
-																number_of_mismatches[i]--;
-																assert(number_of_mismatches[i] >= 0);
-															}
+													}
+												}else if ( first_seq[start1+k]=='T' || first_seq[start1+k]=='t'){
+													if ( resize_MSA[i][position_in_MSA] != 'T' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0' ){
+														if ( position_in_MSA < length_of_MSA){
+															number_of_mismatches[i]--;
+															assert(number_of_mismatches[i] >= 0);
 														}
 													}
 												}
-												}
+											}
+											}
 												/*if (cigar_chars[l]== 'D'){
 													if ( MSA[strains_kept[i]][k+first_seq_start_pos+start_ref1] != '-' && MSA[strains_kept[i]][k+first_seq_start_pos+start_ref1] != '\0'){
 														if ( k+first_seq_start_pos+start_ref1 < length_of_MSA){
@@ -1242,7 +1273,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if ( MSA[strains_kept[i]][position_in_MSA] != 'A' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if ( resize_MSA[i][position_in_MSA] != 'A' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1253,7 +1284,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'G' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'G' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1264,7 +1295,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	
 									//}}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'C' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'C' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1275,7 +1306,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'T' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'T' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1288,9 +1319,9 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 								//		number_of_mismatches[i]++;
 								//	}
 								//}
-								if (MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+								if (resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 									if ( position_in_MSA < length_of_MSA && skip==0){
-										//number_of_mismatches[i]++;
+									//	number_of_mismatches[i]++;
 									}
 								}
 							}
@@ -1301,7 +1332,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if ( MSA[strains_kept[i]][position_in_MSA] != 'A' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if ( resize_MSA[i][position_in_MSA] != 'A' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1313,7 +1344,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'G' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'G' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1325,7 +1356,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'C' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'C' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1337,7 +1368,7 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 									//		number_of_mismatches[i]++;
 									//	}
 									//}
-									if (MSA[strains_kept[i]][position_in_MSA] != 'T' && MSA[strains_kept[i]][position_in_MSA] != '-' && MSA[strains_kept[i]][position_in_MSA] != '\0'){
+									if (resize_MSA[i][position_in_MSA] != 'T' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 										if ( position_in_MSA < length_of_MSA && skip==0){
 											number_of_mismatches[i]++;
 										}
@@ -1368,16 +1399,25 @@ void writeMismatchMatrix_paired( FILE* outfile, FILE* samfile, char** MSA, int* 
 				if ( visited_place > 0 ){
 					alignment_size = alignment_size-visited_place;
 				}
-				fprintf(outfile,"\t%d",alignment_size);
+				//fprintf(outfile,"\t%d",alignment_size);
+				char *num = NULL;
+				asprintf(&num,"%d",alignment_size);
+				strcat(resultsPath,num);
+				free(num);
 				for(i=0; i<number_of_strains_remaining; i++){
-					fprintf(outfile,"\t%d",number_of_mismatches[i]);
+					//fprintf(outfile,"\t%d",number_of_mismatches[i]);
+					char *num2 = NULL;
+					asprintf(&num2,"\t%d",number_of_mismatches[i]);
+					strcat(resultsPath,num2);
+					free(num2);
 				}
-				fprintf(outfile,"\n");
+				//fprintf(outfile,"\n");
+				strcpy(results->mismatch[index_mismatch],resultsPath);
+				index_mismatch++;
 			}
 			free(buffer_copy);
 			first_in_pair=0;
 			second_in_pair=0;
-		}
 	}
 	free(number_of_mismatches);
 }
@@ -1608,6 +1648,59 @@ int process_problematic_sites(int* problematic_sites){
 	fclose(file);
 	return i;
 }
+void reallocate_memory(int number_of_strains_remaining, int* strains_kept, char** MSA, char** names_of_strains, int maxname, int number_of_total_strains){
+	int i,j;
+	int counter=0;
+	for(i=0; i<number_of_strains_remaining; i++){
+		strcpy(resize_names_of_strains[counter],names_of_strains[strains_kept[i]]);
+		strcpy(resize_MSA[counter],MSA[strains_kept[i]]);
+		counter++;
+	}
+	for(i=0; i<number_of_total_strains; i++){
+		free(names_of_strains[i]);
+		free(MSA[i]);
+	}
+	free(names_of_strains);
+	free(MSA);
+}
+void readInSamFile(FILE* sam_file){
+	char buffer[FASTA_MAXLINE];
+	int i,j,k;
+	i=0;
+	while( fgets(buffer,FASTA_MAXLINE,sam_file) != NULL ){
+		if ( buffer[0] != '@' ){
+			strcpy(sam_results[i],buffer);
+			i++;
+		}
+	}
+}
+void adjust_start_end(int start, int end, int* return_arr, int max_sam_length){
+	char* s;
+	char* buffer_copy = (char*)malloc((max_sam_length+1)*sizeof(char));
+	strcpy(buffer_copy,sam_results[start]);
+	s = strtok(buffer_copy,"\t");
+	s = strtok(NULL, "\t");
+	int decimal=0;
+	sscanf(s, "%d", &decimal);
+	decimal=dec2bin(decimal);
+	if (decimal==0){ //second in pair
+		return_arr[0]=start-1;
+	}else{
+		return_arr[0]=start;
+	}
+	strcpy(buffer_copy,sam_results[end]);
+	s = strtok(buffer_copy,"\t");
+	s = strtok(NULL, "\t");
+	decimal=0;
+	sscanf(s, "%d", &decimal);
+	decimal=dec2bin(decimal);
+	if (decimal==1){
+		return_arr[1]=end+1;
+	}else{
+		return_arr[1]=end;
+	}
+	free(buffer_copy);
+}
 int main(int argc, char **argv){
 	struct timespec tstart={0,0}, tend={0.0};
 	Options opt;
@@ -1620,6 +1713,7 @@ int main(int argc, char **argv){
 	opt.llr=0;
 	opt.min_strains=500;
 	opt.max_strains=10000;
+	opt.number_of_cores=1;
 	memset(opt.print_counts,'\0',1000);
 	memset(opt.MSA_reference,'\0',1000);
 	parse_options(argc, argv, &opt);
@@ -1645,21 +1739,23 @@ int main(int argc, char **argv){
 	length_of_MSA=setMSALength(MSA_file);
 	gzclose(MSA_file);
 	printf("Length of MSA: %d\n",length_of_MSA);
-	int i,j;
+	int i,j,k,l;
 	int* problematic_sites = (int*)malloc(1000*sizeof(int));
 	for(i=0; i<1000; i++){
 		problematic_sites[i]=-1;
 	}
 	int number_of_problematic_sites=process_problematic_sites(problematic_sites);
-	int* reference_index = (int*)malloc(30000*sizeof(int));
+	reference_index = (int*)malloc(30000*sizeof(int));
 	for(i=0; i<30000; i++){
 		reference_index[i]=0;
 	}
-	align_references(reference_index,number_of_problematic_sites,problematic_sites,opt.MSA_reference);
+	align_references(number_of_problematic_sites,problematic_sites,opt.MSA_reference);
 	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int *strain_info = (int*)malloc(2*sizeof(int));
 	setNumStrains(MSA_file,strain_info);
 	gzclose(MSA_file);
+	//strain_info[0]=3503116;
+	//strain_info[1]=17;
 	int number_of_strains = strain_info[0];
 	int max_name_length = strain_info[1];
 	free(strain_info);
@@ -1667,7 +1763,7 @@ int main(int argc, char **argv){
 	printf("Maxname length: %d\n",max_name_length);
 	char** MSA = (char **)malloc(number_of_strains*sizeof(char *));
 	for(i=0; i<number_of_strains; i++){
-		MSA[i] = (char *)malloc(length_of_MSA*sizeof(char));
+		MSA[i] = (char *)malloc((length_of_MSA+1)*sizeof(char));
 	}
 	char** names_of_strains = (char**)malloc(number_of_strains*sizeof(char *));
 	for(i=0; i<number_of_strains; i++){
@@ -1739,8 +1835,11 @@ int main(int argc, char **argv){
 		}
 	}
 	int number_of_strains_remaining=0;
+	int *max_sam_length = (int*)malloc(2*sizeof(int));
+	max_sam_length[0]=0;
+	max_sam_length[1]=0;
 	if ( opt.paired==1 ){
-		number_of_strains_remaining=calculateAlleleFreq_paired(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,reference_index,opt.min_strains,opt.max_strains,opt.print_counts);
+		number_of_strains_remaining=calculateAlleleFreq_paired(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,opt.min_strains,opt.max_strains,opt.print_counts,max_sam_length);
 	}else{
 		number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,opt.print_counts);
 	}
@@ -1758,28 +1857,121 @@ int main(int argc, char **argv){
 			placement++;
 		}
 	}
+	resize_names_of_strains = (char**)malloc(number_of_strains_remaining*sizeof(char*));
+	resize_MSA = (char**)malloc(number_of_strains_remaining*sizeof(char*));
+	for(i=0; i<number_of_strains_remaining; i++){
+		resize_names_of_strains[i] = (char*)malloc((max_name_length+1)*sizeof(char));
+		resize_MSA[i] = (char*)malloc((length_of_MSA+1)*sizeof(char));
+		for(j=0; j<length_of_MSA+1; j++){
+			resize_MSA[i][j]='\0';
+		}
+		for(j=0; j<max_name_length+1; j++){
+			resize_names_of_strains[i][j]='\0';
+		}
+	}
+
+	reallocate_memory(number_of_strains_remaining,strains_kept,MSA,names_of_strains,max_name_length,number_of_strains);
 	printf("Creating mismatch matrix...\n");
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
 	FILE *outfile;
 	if (( outfile = fopen(opt.outfile,"w")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
 	if ((sam_file = fopen(opt.sam,"r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
 	if (opt.paired==1){
-		writeMismatchMatrix_paired(outfile,sam_file,MSA,strains_kept,length_of_MSA,number_of_strains,number_of_strains_remaining,names_of_strains,reference_index);
+		sam_results = (char**)malloc(max_sam_length[1]*sizeof(char*));
+		for(i=0; i<max_sam_length[1]; i++){
+			sam_results[i]=(char*)malloc((max_sam_length[0]+1)*sizeof(char));
+			for(j=0; j<max_sam_length[0]+1; j++){
+				sam_results[i][j]='\0';
+			}
+		}
+		readInSamFile(sam_file);
+		fclose(sam_file);
+		fprintf(outfile,"qName\tblockSizes");
+		for(i=0; i<number_of_strains_remaining; i++){
+			fprintf(outfile,"\t%s",resize_names_of_strains[i]);
+		}
+		fprintf(outfile,"\n");
+		pthread_t threads[opt.number_of_cores];//array of our threads
+		thread_struct tstr[opt.number_of_cores];//array of stuct that contains input and output for each thread
+		for(i=0; i<opt.number_of_cores; i++){
+			tstr[i].start = 0;
+			tstr[i].end = 0;
+			tstr[i].str = malloc(sizeof(struct resultsStruct));
+			tstr[i].number_of_strains_remaining=number_of_strains_remaining;
+			tstr[i].number_of_strains=number_of_strains;
+			tstr[i].length_of_MSA=length_of_MSA;
+		}
+		int divideFile, start, end;
+		divideFile = max_sam_length[1]/opt.number_of_cores;
+		j=0;
+		for(i=0; i<opt.number_of_cores; i++){
+			start=j;
+			end=j+divideFile;
+			if ( i==opt.number_of_cores-1){
+				end=max_sam_length[1]-1;
+			}
+			int* adjust_ends = (int*)malloc(2*sizeof(int));
+			if ( tstr[i].start == 1 ){
+				start++;
+			}
+			adjust_ends[0]=0;
+			adjust_ends[1]=0;
+			adjust_start_end(start,end,adjust_ends,max_sam_length[0]);
+			if ( start != adjust_ends[0] ){
+				tstr[i-1].end = tstr[i-1].end-1;
+			}
+			if (end != adjust_ends[1] ){
+				tstr[i+1].start = tstr[i+1].start+1;
+			}
+			if ( i==opt.number_of_cores-1){
+				adjust_ends[1]=max_sam_length[1];
+			}
+			tstr[i].start = adjust_ends[0];
+			tstr[i].end =adjust_ends[1];
+			tstr[i].thread_number=i;
+			tstr[i].max_sam_length=max_sam_length[0];
+			j=j+divideFile;
+			tstr[i].str->mismatch =(char**) malloc((end-start)*(sizeof(char *)));
+			for(k=0; k<end-start; k++){
+				tstr[i].str->mismatch[k]=(char*)malloc((max_sam_length[0]+300000)*sizeof(char));
+				for(l=0; l<max_sam_length[0]+300000; l++){
+					tstr[i].str->mismatch[k][l]='\0';
+				}
+			}
+			free(adjust_ends);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			printf("thread: %d start: %d end: %d\n",tstr[i].thread_number,tstr[i].start,tstr[i].end);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			pthread_create(&threads[i], NULL, writeMismatchMatrix_paired, &tstr[i]);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			pthread_join(threads[i], NULL);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			for ( j=0; j<(tstr[i].end-tstr[i].start); j++){
+				if ( tstr[i].str->mismatch[j][0]=='\0' ){
+					break;
+				}
+				fprintf(outfile,"%s\n",tstr[i].str->mismatch[j]);
+			}
+		}
+			//writeMismatchMatrix_paired(outfile,sam_file,resize_MSA,length_of_MSA,number_of_strains,number_of_strains_remaining,resize_names_of_strains,reference_index);
 	}else{
 		writeMismatchMatrix(outfile,sam_file,MSA,strains_kept,length_of_MSA,number_of_strains,number_of_strains_remaining,names_of_strains);
 	}
-	fclose(sam_file);
 	fclose(outfile);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
 	printf("Took %.5fseconds\n",((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 	//free(reference);
 	//free(variant_sites);
-	for(i=0; i<number_of_strains; i++){
-		free(names_of_strains[i]);
-		free(MSA[i]);
-	}
-	free(names_of_strains);
-	free(MSA);
+	//for(i=0; i<number_of_strains; i++){
+		//free(names_of_strains[i]);
+	//	free(MSA[i]);
+	//}
+	//free(names_of_strains);
+	//free(MSA);
 	if ( number_of_strains_remaining > 0 ){
 		free(strains_kept);
 	}else{
@@ -1789,9 +1981,9 @@ int main(int argc, char **argv){
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.llr==1){
-		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l",opt.outfile,opt.freq,opt.error);
+		sprintf(buffer,"Rscript /ocean/projects/bio180015p/pipes/ww_benchmark/samples/EM_C_LLR_updated.R -i %s -f %lf -e %lf -l -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
 	}else{
-		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf",opt.outfile,opt.freq,opt.error);
+		sprintf(buffer,"Rscript /ocean/projects/bio180015p/pipes/ww_benchmark/samples/EM_C_LLR_updated.R -i %s -f %lf -e %lf -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
 	}
 	system(buffer);
 	free(buffer);

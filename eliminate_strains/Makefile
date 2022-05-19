@@ -7,7 +7,7 @@ CC = gcc
 CFLAGS = -w
 DBGCFLAGS = -g
 #  -lz links the gz library
-LIBS = -lz
+LIBS = -lz -lpthread
 #sources
 SOURCES = eliminate_strains.c options.c 
 ALIGNMENT = align_reference.c needleman_wunsch.c alignment.c alignment_scoring.c

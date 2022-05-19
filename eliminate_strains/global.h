@@ -25,12 +25,25 @@ typedef struct Options{
 	int max_strains;
 	char print_counts[1000];
 	char MSA_reference[1000];
+	int number_of_cores;
 }Options;
 
-typedef struct blob{
-	char* key;
-	size_t data_len;
-	char* data;
-}blob;
+typedef struct resultsStruct{
+	char **mismatch;
+}resultsStruct;
 
+typedef struct thread_struct{
+	int start;
+	int end;
+	int thread_number;
+	int max_sam_length;
+	int length_of_MSA;
+	int number_of_strains;
+	int number_of_strains_remaining;
+	resultsStruct *str; 
+}thread_struct;
+extern char** resize_MSA;
+extern char** resize_names_of_strains;
+extern int* reference_index;
+extern char** sam_results;
 #endif

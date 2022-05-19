@@ -3,13 +3,11 @@
 #include <string.h>
 #include "needleman_wunsch.h"
 #include "global.h"
-void align_references(int* ref_positions, int number_of_problematic_sites, int* problematic_sites, char MSA_reference[]){
+void align_references(int number_of_problematic_sites, int* problematic_sites, char MSA_reference[]){
 	FILE* Alignment_ref;
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	//Alignment_ref = fopen("/space/s1/lenore/virus_database/imputation/imputation_pipeline/01-25/EPI_ISL_402124.fasta","r");
-	//Alignment_ref = fopen("/space/s1/lenore/virus_database/imputation/imputation_pipeline/ucsc/EPI_ISL_402124.fasta","r");
 	Alignment_ref = fopen(MSA_reference,"r");
 	if (Alignment_ref == NULL){
 		printf("Error!");
@@ -30,7 +28,7 @@ void align_references(int* ref_positions, int number_of_problematic_sites, int* 
 	FILE* Wuhan_file;
 	Wuhan_file = fopen("MN908947.3.fasta","r");
 	if (Wuhan_file == NULL){
-		printf("Error this one!");
+		printf("Error!");
 		exit(1);
 	}
 	char *Wuhan = (char*)malloc(30000*sizeof(char));
@@ -62,23 +60,23 @@ void align_references(int* ref_positions, int number_of_problematic_sites, int* 
 	//printf("seqB: %s\n", result->result_b);
 	//printf("alignment score: %i\n", result->score);
 	int length_alignment = strlen(result->result_b);
-	//int *ref_positions = (int*)malloc(length_alignment*sizeof(int));
+	//int *reference_index = (int*)malloc(length_alignment*sizeof(int));
 	//for(i=0; i<length_alignment; i++){
-	//	ref_positions[i]=0;
+	//	reference_index[i]=0;
 	//}
 	j=0;
 	int k=0;
 	for(i=0; i<length_alignment; i++){
 		if ( result->result_a[i]=='-' ){
-			ref_positions[i]=-1;
+			reference_index[i]=-1;
 		}else{
 			if ( result->result_a[i] != result->result_b[i] ){
-				ref_positions[i]=-1;
+				reference_index[i]=-1;
 			}else{
-				ref_positions[i]=j;
+				reference_index[i]=j;
 				for(k=0; k<number_of_problematic_sites; k++){
 					if (i==problematic_sites[k]-1){
-						ref_positions[i]=-1;
+						reference_index[i]=-1;
 					}
 				}
 			}
