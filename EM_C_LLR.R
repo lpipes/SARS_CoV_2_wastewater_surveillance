@@ -255,7 +255,7 @@ cat("\nLLR ", (proc.time() - ptm)[3],"\n")
 
 names.arg <- colnames(Q)
 em_output_df <- cbind(names.arg,p,LLR,too_large_flag)
-em_output_df <- data.frame(em_output_df)
+em_output_df <- data.frame(em_output_df,check.names = F)
 colnames(em_output_df) <- c("names.arg","p", "LLR","flag")
 em_output_df$p <- as.numeric(em_output_df$p)
 em_output_df <- em_output_df[order(em_output_df$p,decreasing = T),]
@@ -275,7 +275,7 @@ if (!is.null(opt$llr)){
 
 
 # d <- data.table(em_output_df, key="p")
-d <- data.frame(p, LLR, names.arg)
+d <- data.frame(p, LLR, names.arg,check.names = F)
 d <- d[order(d$p, decreasing = T), ]
 d <- d[d$p >= opt$filter, ]
 d$p <- d$p/sum(d$p)
