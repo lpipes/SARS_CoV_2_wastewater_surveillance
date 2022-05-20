@@ -328,21 +328,27 @@ dev.off()
 
 ##### site LLR
 if (!is.null(opt$site_LLR)){
-  p <- read.csv(paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  # p <- read.csv(paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  p <- p_forsite
   ref <- readLines(opt$ref_file)
   ref_name <- gsub(">","",ref[seq(1,length(ref),2)])
   ref <- ref[seq(2,length(ref),2)]
   names(ref) <- ref_name
-  un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
-  group_tmp <- which(str_detect(un_group,"Group"))
-  un_group_list <- vector("list",length(group_tmp))
-  for (u in 1:length(group_tmp)){
-    if (u!=length(group_tmp)){
-      un_group_list[[u]] <- un_group[(group_tmp[u]+1):(group_tmp[u+1]-1)]
-    } else {
-      un_group_list[[u]] <- un_group[(group_tmp[u]+1):length(un_group)]
+  if (file.exists(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))){
+    un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
+    if (length(un_group)>=2){
+      group_tmp <- which(str_detect(un_group,"Group"))
+      un_group_list <- vector("list",length(group_tmp))
+      for (u in 1:length(group_tmp)){
+        if (u!=length(group_tmp)){
+          un_group_list[[u]] <- un_group[(group_tmp[u]+1):(group_tmp[u+1]-1)]
+        } else {
+          un_group_list[[u]] <- un_group[(group_tmp[u]+1):length(un_group)]
+        }
+      }
     }
   }
+  
   
   ref_allele <- matrix(0,nrow = nchar(ref[1]),ncol = 4,
                        dimnames = list(1:nchar(ref[1]),
