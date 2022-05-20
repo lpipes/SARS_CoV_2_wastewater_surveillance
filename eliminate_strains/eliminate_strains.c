@@ -1928,17 +1928,17 @@ int main(int argc, char **argv){
 			tstr[i].thread_number=i;
 			tstr[i].max_sam_length=max_sam_length[0];
 			j=j+divideFile;
-			tstr[i].str->mismatch =(char**) malloc((end-start)*(sizeof(char *)));
-			for(k=0; k<end-start; k++){
+			free(adjust_ends);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			printf("thread: %d start: %d end: %d\n",tstr[i].thread_number,tstr[i].start,tstr[i].end);
+			tstr[i].str->mismatch =(char**) malloc((tstr[i].end-tstr[i].start)*(sizeof(char *)));
+			for(k=0; k<tstr[i].end-tstr[i].start; k++){
 				tstr[i].str->mismatch[k]=(char*)malloc((max_sam_length[0]+300000)*sizeof(char));
 				for(l=0; l<max_sam_length[0]+300000; l++){
 					tstr[i].str->mismatch[k][l]='\0';
 				}
 			}
-			free(adjust_ends);
-		}
-		for(i=0; i<opt.number_of_cores; i++){
-			printf("thread: %d start: %d end: %d\n",tstr[i].thread_number,tstr[i].start,tstr[i].end);
 		}
 		for(i=0; i<opt.number_of_cores; i++){
 			pthread_create(&threads[i], NULL, writeMismatchMatrix_paired, &tstr[i]);
@@ -1955,6 +1955,16 @@ int main(int argc, char **argv){
 			}
 		}
 			//writeMismatchMatrix_paired(outfile,sam_file,resize_MSA,length_of_MSA,number_of_strains,number_of_strains_remaining,resize_names_of_strains,reference_index);
+		for(i=0; i<max_sam_length[1]; i++){
+			free(sam_results[i]);
+		}
+		for(i=0; i<opt.number_of_cores; i++){
+			for(j=0; j<tstr[i].end-tstr[i].start; j++){
+				free(tstr[i].str->mismatch[j]);
+			}
+			free(tstr[i].str->mismatch);
+			free(tstr[i].str);
+		}
 	}else{
 		writeMismatchMatrix(outfile,sam_file,MSA,strains_kept,length_of_MSA,number_of_strains,number_of_strains_remaining,names_of_strains);
 	}
@@ -1969,6 +1979,12 @@ int main(int argc, char **argv){
 	//}
 	//free(names_of_strains);
 	//free(MSA);
+	for(i=0; i<number_of_strains_remaining; i++){
+		free(resize_names_of_strains[i]);
+		free(resize_MSA[i]);
+	}
+	free(resize_names_of_strains);
+	free(resize_MSA);
 	if ( number_of_strains_remaining > 0 ){
 		free(strains_kept);
 	}else{

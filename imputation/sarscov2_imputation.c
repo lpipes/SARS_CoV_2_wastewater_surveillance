@@ -13,7 +13,7 @@
 int tip=0;
 int comma=0;
 int open=0;
-double minVariance = 99999999999999999;
+long double minVariance = 99999999999999999;
 int minVarNode = -1;
 HASHMAP(char, struct specmap) sm;
 
@@ -1080,8 +1080,12 @@ void findMinVariance(node* tree, int node, int size){
 	int i=0;
 	if (node==-1){ return; }
 	if (parent == -1){
-		findMinVariance(tree,child0,size);
-		findMinVariance(tree,child1,size);
+		if ( child0 != -1 ){
+			findMinVariance(tree,child0,size);
+		}
+		if (child1 != -1 ){
+			findMinVariance(tree,child1,size);
+		}
 		return;
 	}
 	if (child0 == -1 ){ return; }
@@ -1089,14 +1093,18 @@ void findMinVariance(node* tree, int node, int size){
 	int num_children0 = tree[child0].nd;
 	int num_children1 = tree[child1].nd;
 	int num_ancestors = size - num_children1 - num_children0;
-	double mean = (double)(num_children0 + num_children1 + num_ancestors )/3;
-	double variance = (double)((num_ancestors-mean)*(num_ancestors-mean) + (num_children0-mean)*(num_children0-mean) + (num_children1-mean)*(num_children1-mean))/3;
+	long double mean = (long double)(num_children0 + num_children1 + num_ancestors )/3;
+	long double variance = (long double)((num_ancestors-mean)*(num_ancestors-mean) + (num_children0-mean)*(num_children0-mean) + (num_children1-mean)*(num_children1-mean))/3;
 	if (minVariance > variance){
 		minVariance = variance;
 		minVarNode = node;
 	}
-	findMinVariance(tree,child0,size);
-	findMinVariance(tree,child1,size);
+	if ( tree[child0].up[0] != -1 && tree[child0].up[1] != -1){
+		findMinVariance(tree,child0,size);
+	}
+	if ( tree[child1].up[0] != -1 && tree[child1].up[1] != -1 ){
+		findMinVariance(tree,child1,size);
+	}
 	return;
 }
 int findStartNode(node* tree,int node){
