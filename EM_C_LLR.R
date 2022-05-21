@@ -261,7 +261,7 @@ em_output_df$p <- as.numeric(em_output_df$p)
 em_output_df <- em_output_df[order(em_output_df$p,decreasing = T),]
 em_output_df <- em_output_df[em_output_df$p>=opt$filter,]
 em_output_df$p <- em_output_df$p/sum(em_output_df$p)
-p_forsite <- em_output_df$p
+p_forsite <- em_output_df
 em_output_df$p <- round(em_output_df$p,digits = 3)
 em_output_df$LLR <- as.character(em_output_df$LLR)
 em_output_df$flag <- as.logical(em_output_df$flag)
