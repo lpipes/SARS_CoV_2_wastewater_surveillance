@@ -255,13 +255,13 @@ cat("\nLLR ", (proc.time() - ptm)[3],"\n")
 
 names.arg <- colnames(Q)
 em_output_df <- cbind(names.arg,p,LLR,too_large_flag)
-em_output_df <- data.frame(em_output_df)
+em_output_df <- data.frame(em_output_df,check.names = F)
 colnames(em_output_df) <- c("names.arg","p", "LLR","flag")
 em_output_df$p <- as.numeric(em_output_df$p)
 em_output_df <- em_output_df[order(em_output_df$p,decreasing = T),]
 em_output_df <- em_output_df[em_output_df$p>=opt$filter,]
 em_output_df$p <- em_output_df$p/sum(em_output_df$p)
-p_forsite <- em_output_df$p
+p_forsite <- em_output_df
 em_output_df$p <- round(em_output_df$p,digits = 3)
 em_output_df$LLR <- as.character(em_output_df$LLR)
 em_output_df$flag <- as.logical(em_output_df$flag)
@@ -275,7 +275,7 @@ if (!is.null(opt$llr)){
 
 
 # d <- data.table(em_output_df, key="p")
-d <- data.frame(p, LLR, names.arg)
+d <- data.frame(p, LLR, names.arg,check.names = F)
 d <- d[order(d$p, decreasing = T), ]
 d <- d[d$p >= opt$filter, ]
 d$p <- d$p/sum(d$p)
@@ -328,21 +328,27 @@ dev.off()
 
 ##### site LLR
 if (!is.null(opt$site_LLR)){
-  p <- read.csv(paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  # p <- read.csv(paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  p <- p_forsite
   ref <- readLines(opt$ref_file)
   ref_name <- gsub(">","",ref[seq(1,length(ref),2)])
   ref <- ref[seq(2,length(ref),2)]
   names(ref) <- ref_name
-  un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
-  group_tmp <- which(str_detect(un_group,"Group"))
-  un_group_list <- vector("list",length(group_tmp))
-  for (u in 1:length(group_tmp)){
-    if (u!=length(group_tmp)){
-      un_group_list[[u]] <- un_group[(group_tmp[u]+1):(group_tmp[u+1]-1)]
-    } else {
-      un_group_list[[u]] <- un_group[(group_tmp[u]+1):length(un_group)]
+  if (file.exists(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))){
+    un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
+    if (length(un_group)>=2){
+      group_tmp <- which(str_detect(un_group,"Group"))
+      un_group_list <- vector("list",length(group_tmp))
+      for (u in 1:length(group_tmp)){
+        if (u!=length(group_tmp)){
+          un_group_list[[u]] <- un_group[(group_tmp[u]+1):(group_tmp[u+1]-1)]
+        } else {
+          un_group_list[[u]] <- un_group[(group_tmp[u]+1):length(un_group)]
+        }
+      }
     }
   }
+  
   
   ref_allele <- matrix(0,nrow = nchar(ref[1]),ncol = 4,
                        dimnames = list(1:nchar(ref[1]),
