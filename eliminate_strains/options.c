@@ -22,6 +22,8 @@ static struct option long_options[]=
 	{"print-allele-counts",required_argument,0,'b'},
 	{"cores",required_argument,0,'t'},
 	{"msa-reference",required_argument,0,'g'},
+	{"no-read-bam",no_argument,0,'n'},
+	{"print-deletions",required_argument,0,'r'},
 	{0,0,0,0}
 };
 
@@ -47,6 +49,9 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-b, --print-allele-counts [FILE]	Print allele counts to file\n\
 	-t, --cores [decimal]			Number of cores [default: 1]\n\
 	-g, --msa-reference [FILE]		MSA reference index\n\
+	-n, --no-read-bam			Don't thread, don't read in bam\n\
+	-r, --print-deletions [FILE]		Print sites with deletions\n\
+	-j, --threshold-for-deleted-sites	Threshold to print deleted sites [default: 0.001]\n\
 	\n";
 
 void print_help_statement(){
@@ -62,7 +67,7 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplai:s:f:o:v:0:1:2:d:e:t:c:m:x:b:g:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hplnai:s:f:o:v:0:1:2:d:e:t:c:m:x:b:g:r:j:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
@@ -79,6 +84,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				if (!success)
 					fprintf(stderr, "Invalid counts file\n");
 				break;
+			case 'r':
+				success = sscanf(optarg, "%s", opt->print_deletions);
+				if (!success)
+					fprintf(stderr, "Invalid deletions file\n");
+				break;
 			case 'p':
 				opt->paired=1;
 				break;
@@ -92,6 +102,9 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%s", opt->MSA_reference);
 				if (!success)
 					fprintf(stderr, "Invalid fasta file\n");
+				break;
+			case 'n':
+				opt->no_read_bam=1;
 				break;
 			case 'i':
 				success = sscanf(optarg, "%s", opt->fasta);
@@ -122,6 +135,11 @@ void parse_options(int argc, char **argv, Options *opt){
 				success = sscanf(optarg, "%lf", &(opt->freq));
 				if (!success)
 					fprintf(stderr, "Invalid freq\n");
+				break;
+			case 'j':
+				success = sscanf(optarg, "%lf", &(opt->deletion_threshold));
+				if (!success)
+					fprintf(stderr, "Invalid threshold\n");
 				break;
 			case 't':
 				success = sscanf(optarg, "%d", &(opt->number_of_cores));

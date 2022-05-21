@@ -26,6 +26,9 @@ typedef struct Options{
 	char print_counts[1000];
 	char MSA_reference[1000];
 	int number_of_cores;
+	int no_read_bam;
+	char print_deletions[1000];
+	double deletion_threshold;
 }Options;
 
 typedef struct resultsStruct{
