@@ -25,7 +25,8 @@ spec <- matrix(
     "site_LLR","s",0,"logical", "Perform the LLR procedure for each site.",
     "variant","v",1,"character" , "Name of the file containing variant sites.",
     "read_count","b",1,"character", "Name of the file containing allele counts from reads.",
-    "ref_file","r",1,"character","MSA FASTA of SARS-CoV-2 reference strains."),
+    "ref_file","r",1,"character","MSA FASTA of SARS-CoV-2 reference strains.",
+    "deletion_file","d",1,"character","Deletion proportion for each site."),
   byrow=TRUE, ncol=5)
 
 opt <- getopt(spec=spec)
@@ -48,12 +49,17 @@ if (!is.null(opt$site_LLR)){
     print("Please provide a MSA FASTA of SARS-CoV-2 reference strains")
     quit()
   }
+  if (!file.exists(opt$deletion_file)){
+    print("Please provide a file containing deletion proportion for each site")
+    quit()
+  }
 }
 
 if (!file.exists(opt$mismatch)) {
   print("No such file exists")
   quit()
 }
+
 
 # Read in data
 ptm <- proc.time()
@@ -424,7 +430,14 @@ if (!is.null(opt$site_LLR)){
       }
     }
   }
-  save(site_LLR,file = paste0("./site_LLR_",opt$mismatch,".RData"))
+  # save(site_LLR,file = paste0("./site_LLR_",opt$mismatch,".RData"))
+  deletion <- read.table(opt$deletion_file,header = T,sep = "\t")
+  site_LLR[deletion[,1]+1] <- NA
+  site_frame <- data.frame(index = 1:length(site_LLR),
+                           LLR = abs(site_LLR))
+  site_frame <- filter(site_frame,!is.na(LLR))
+  site_frame <- site_frame[order(site_LLR$LLR,decreasing = T),]
+  write.csv(site_frame,file = paste0(opt$mismatch,"_siteLLR.csv"))
 }
 
 }
