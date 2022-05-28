@@ -262,7 +262,31 @@ ptm <- proc.time()
 #   }
 # }
 
-tmp <- foreach (ii=1:length(p_tmp), .combine = cbind) %dopar% {
+# tmp <- foreach (ii=1:length(p_tmp), .combine = cbind) %dopar% {
+#   require(turboEM)
+#   require(CovidEM)
+#   if (p[ii]>=opt$filter){
+#     p0 <- p_tmp[-ii]
+#     p0 <- p0/sum(p0)
+#     res.rm <- turboem(
+#       par = p0, fixptfn = EM, objfn = neg_logL, method = "squarem", y = Q[,-ii], parallel = F,
+#       control.run = list(
+#         convtype = "objfn", tol = 1.0e-7,
+#         stoptype = "maxtime", maxtime = 10000
+#       )
+#     )
+#     log.likelihood.without <- -neg_logL(pars(res.rm),Q[,-ii])
+#     if (is.na(log.likelihood.without)){
+#       # LLR[ii] <- 100
+#       # too_large_flag[ii] <- T
+#       return(c(100,T))
+#     }else {
+#       # LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
+#       return(c(2*(log.likelihood.with-log.likelihood.without),F))
+#     }
+#   }
+# }
+tmp <- parSapply(cl, 1:length(p_tmp), function(ii,p,opt,p_tmp,Q,log.likelihood.with){
   require(turboEM)
   require(CovidEM)
   if (p[ii]>=opt$filter){
@@ -285,7 +309,7 @@ tmp <- foreach (ii=1:length(p_tmp), .combine = cbind) %dopar% {
       return(c(2*(log.likelihood.with-log.likelihood.without),F))
     }
   }
-}
+},p=p,opt=opt,p_tmp=p_tmp,Q=Q,log.likelihood.with=log.likelihood.with)
 stopCluster(cl)
 cat("\nLLR ", (proc.time() - ptm)[3],"\n")
 LLR <- tmp[1,]
