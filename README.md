@@ -5,6 +5,8 @@ View the preprint here: <a href="https://www.medrxiv.org/content/10.1101/2022.01
 
 The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program. <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must be installed and in your path.
 
+<a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
+
 # Installation
 To install
 	
