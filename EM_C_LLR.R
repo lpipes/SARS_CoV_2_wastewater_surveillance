@@ -14,6 +14,9 @@ suppressMessages(library(ggplot2))
 suppressMessages(library(stringr))
 suppressMessages(library(CovidEM))
 suppressMessages(library(getopt))
+suppressMessages(library(doParallel))
+suppressMessages(library(parallel))
+suppressMessages(library(snow))
 
 spec <- matrix(
   c("mismatch",  "i", 2, "character", "Name of the file containing the mismatch matrix. (This should be a TXT file.)",
@@ -25,7 +28,9 @@ spec <- matrix(
     "site_LLR","s",0,"logical", "Perform the LLR procedure for each site.",
     "variant","v",1,"character" , "Name of the file containing variant sites.",
     "read_count","b",1,"character", "Name of the file containing allele counts from reads.",
-    "ref_file","r",1,"character","MSA FASTA of SARS-CoV-2 reference strains."),
+    "ref_file","r",1,"character","MSA FASTA of SARS-CoV-2 reference strains.",
+    "deletion_file","d",1,"character","Deletion proportion for each site.",
+    "core_num","c",1,"integer","Number of cores to use"),
   byrow=TRUE, ncol=5)
 
 opt <- getopt(spec=spec)
@@ -48,12 +53,17 @@ if (!is.null(opt$site_LLR)){
     print("Please provide a MSA FASTA of SARS-CoV-2 reference strains")
     quit()
   }
+  if (!file.exists(opt$deletion_file)){
+    print("Please provide a file containing deletion proportion for each site")
+    quit()
+  }
 }
 
 if (!file.exists(opt$mismatch)) {
   print("No such file exists")
   quit()
 }
+
 
 # Read in data
 ptm <- proc.time()
@@ -192,8 +202,6 @@ p1 <- p1 / sum(p1)
 options(digits = 13)
 
 # cl.cores = detectCores(logical = F)
-# cl <- makeCluster(cl.cores)
-# registerDoParallel(cl,cores = cl.cores)
 
 ptm <- proc.time()
 res <- turboem(
@@ -222,11 +230,65 @@ cat("\nSQUAREM algorithm ", (proc.time() - ptm)[3],"\n")
 
 # LLR
 if (!is.null(opt$llr)){
+  if(is.null(opt$core_num)){
+    cl.cores <- 1
+  } else {
+    cl.cores <- opt$core_num
+  }
+  cl <- makeCluster(cl.cores)
+  registerDoParallel(cl,cores = cl.cores)
 p_tmp <- pars(res)
-LLR <- rep(NA,length(p_tmp))
+# LLR <- rep(NA,length(p_tmp))
 ptm <- proc.time()
-too_large_flag <- logical(length(p_tmp))
-for (ii in 1:length(p_tmp)){
+# too_large_flag <- logical(length(p_tmp))
+# for (ii in 1:length(p_tmp)){
+#   if (p[ii]>=opt$filter){
+#     p0 <- p_tmp[-ii]
+#     p0 <- p0/sum(p0)
+#     res.rm <- turboem(
+#       par = p0, fixptfn = EM, objfn = neg_logL, method = "squarem", y = Q[,-ii], parallel = F,
+#       control.run = list(
+#         convtype = "objfn", tol = 1.0e-7,
+#         stoptype = "maxtime", maxtime = 10000
+#       )
+#     )
+#     log.likelihood.without <- -neg_logL(pars(res.rm),Q[,-ii])
+#     if (is.na(log.likelihood.without)){
+#       LLR[ii] <- 100
+#       too_large_flag[ii] <- T
+#     }else {
+#       LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
+#     }
+#   }
+# }
+
+# tmp <- foreach (ii=1:length(p_tmp), .combine = cbind) %dopar% {
+#   require(turboEM)
+#   require(CovidEM)
+#   if (p[ii]>=opt$filter){
+#     p0 <- p_tmp[-ii]
+#     p0 <- p0/sum(p0)
+#     res.rm <- turboem(
+#       par = p0, fixptfn = EM, objfn = neg_logL, method = "squarem", y = Q[,-ii], parallel = F,
+#       control.run = list(
+#         convtype = "objfn", tol = 1.0e-7,
+#         stoptype = "maxtime", maxtime = 10000
+#       )
+#     )
+#     log.likelihood.without <- -neg_logL(pars(res.rm),Q[,-ii])
+#     if (is.na(log.likelihood.without)){
+#       # LLR[ii] <- 100
+#       # too_large_flag[ii] <- T
+#       return(c(100,T))
+#     }else {
+#       # LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
+#       return(c(2*(log.likelihood.with-log.likelihood.without),F))
+#     }
+#   }
+# }
+tmp <- parSapply(cl, 1:length(p_tmp), function(ii,p,opt,p_tmp,Q,log.likelihood.with){
+  require(turboEM)
+  require(CovidEM)
   if (p[ii]>=opt$filter){
     p0 <- p_tmp[-ii]
     p0 <- p0/sum(p0)
@@ -239,14 +301,19 @@ for (ii in 1:length(p_tmp)){
     )
     log.likelihood.without <- -neg_logL(pars(res.rm),Q[,-ii])
     if (is.na(log.likelihood.without)){
-      LLR[ii] <- 100
-      too_large_flag[ii] <- T
+      # LLR[ii] <- 100
+      # too_large_flag[ii] <- T
+      return(c(100,T))
     }else {
-      LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
+      # LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
+      return(c(2*(log.likelihood.with-log.likelihood.without),F))
     }
   }
-}
+},p=p,opt=opt,p_tmp=p_tmp,Q=Q,log.likelihood.with=log.likelihood.with)
+stopCluster(cl)
 cat("\nLLR ", (proc.time() - ptm)[3],"\n")
+LLR <- tmp[1,]
+too_large_flag <- tmp[2,]
 } else {
   LLR <- rep(NA,length(p))
   too_large_flag <- rep(F,length(p))
@@ -424,7 +491,14 @@ if (!is.null(opt$site_LLR)){
       }
     }
   }
-  save(site_LLR,file = paste0("./site_LLR_",opt$mismatch,".RData"))
+  # save(site_LLR,file = paste0("./site_LLR_",opt$mismatch,".RData"))
+  deletion <- read.table(opt$deletion_file,header = T,sep = "\t")
+  site_LLR[deletion[,1]+1] <- NA
+  site_frame <- data.frame(index = 1:length(site_LLR),
+                           LLR = abs(site_LLR))
+  site_frame <- filter(site_frame,!is.na(LLR))
+  site_frame <- site_frame[order(site_frame$LLR,decreasing = T),]
+  write.csv(site_frame,file = paste0(opt$mismatch,"_siteLLR.csv"))
 }
 
 }

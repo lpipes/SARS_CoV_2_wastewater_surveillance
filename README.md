@@ -81,6 +81,8 @@ Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[
     -n|--num_show      Maximal number of strains to show in the plot (default = 10).
     
     -h|--help          Show help.
+	
+    -r|--core_num      Number of cores to use.	
     
  (Rely on getopt package.)
 
