@@ -1867,7 +1867,7 @@ void writeMismatchMatrix_paired_no_read_bam( FILE* outfile, FILE* samfile, char*
 	}
 	free(number_of_mismatches);
 }
-void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining, char** names_of_strains){
+void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains_kept, int length_of_MSA, int number_of_strains, int number_of_strains_remaining){
 	int i,j,k;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -1880,7 +1880,7 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains
 	int* number_of_mismatches = (int *)malloc(number_of_strains_remaining*sizeof(int));
 	fprintf(outfile,"qName\tblockSizes");
 	for(i=0; i<number_of_strains_remaining; i++){
-		fprintf(outfile,"\t%s",names_of_strains[strains_kept[i]]);
+		fprintf(outfile,"\t%s",resize_names_of_strains[i]);
 	}
 	fprintf(outfile,"\n");
 	int alignment_size;
@@ -1963,36 +1963,37 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains
 				start=0;
 				start_ref=0;
 				for(j=0; j<cigar_char_count; j++){
+					int position_in_MSA = reference_index[k+position+start_ref];
 					for(k=0; k<cigar[j]; k++){
 						if (cigar_chars[j] == 'M' ){
 							if ( sequence[k+start] == 'A' || sequence[k+start] == 'a' ){
 								//if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-' ){
-								if ( MSA[strains_kept[i]][k+position+start_ref] != 'A' && MSA[strains_kept[i]][k+position+start_ref] != '-' && MSA[strains_kept[i]][k+position+start_ref] != '\0'){
+								if ( resize_MSA[i][position_in_MSA] != 'A' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 									//if ( reference[k+start_ref+position] < length_of_MSA ){
-									if ( k+start_ref+position < length_of_MSA ){
+									if ( position_in_MSA < length_of_MSA ){
 										number_of_mismatches[i]++;
 									}
 								}
 							}else if ( sequence[k+start] == 'G' || sequence[k+start] == 'g' ){
 								//if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'G' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-								if (MSA[strains_kept[i]][k+position+start_ref] != 'G' && MSA[strains_kept[i]][k+position+start_ref] != '-' && MSA[strains_kept[i]][k+position+start_ref] != '\0'){
-									if ( k+start_ref+position < length_of_MSA ){
+								if (resize_MSA[i][position_in_MSA] != 'G' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
+									if ( position_in_MSA < length_of_MSA ){
 										number_of_mismatches[i]++;
 									}
 								}
 							}else if ( sequence[k+start] == 'C' || sequence[k+start] == 'c' ){
 								//if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'C' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-								if (MSA[strains_kept[i]][k+position+start_ref] != 'C' && MSA[strains_kept[i]][k+position+start_ref] != '-' && MSA[strains_kept[i]][k+position+start_ref] != '\0'){
+								if (resize_MSA[i][position_in_MSA] != 'C' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 									//if ( reference[k+start_ref+position] < length_of_MSA ){
-									if ( k+start_ref+position < length_of_MSA ){
+									if ( position_in_MSA < length_of_MSA ){
 										number_of_mismatches[i]++;
 									}
 								}
 							}else if ( sequence[k+start] == 'T' || sequence[k+start] == 't' ){
 								//if (MSA[strains_kept[i]][reference[k+position+start_ref]] != 'T' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-'){
-								if (MSA[strains_kept[i]][k+position+start_ref] != 'T' && MSA[strains_kept[i]][k+position+start_ref] != '-' && MSA[strains_kept[i]][k+position+start_ref] != '\0'){
+								if (resize_MSA[i][position_in_MSA] != 'T' && resize_MSA[i][position_in_MSA] != '-' && resize_MSA[i][position_in_MSA] != '\0'){
 									//if ( reference[k+start_ref+position] < length_of_MSA ){
-									if ( k+start_ref+position < length_of_MSA ){
+									if ( position_in_MSA < length_of_MSA ){
 										number_of_mismatches[i]++;
 									}
 								}
@@ -2419,7 +2420,7 @@ int main(int argc, char **argv){
 	}else if ( opt.paired==1 && opt.no_read_bam==1 ){
 		writeMismatchMatrix_paired_no_read_bam(outfile,sam_file,resize_MSA,length_of_MSA,number_of_strains,number_of_strains_remaining,resize_names_of_strains,reference_index);
 	}else{
-		writeMismatchMatrix(outfile,sam_file,MSA,strains_kept,length_of_MSA,number_of_strains,number_of_strains_remaining,names_of_strains);
+		writeMismatchMatrix(outfile,sam_file,MSA,strains_kept,length_of_MSA,number_of_strains,number_of_strains_remaining);
 	}
 	fclose(outfile);
 	clock_gettime(CLOCK_MONOTONIC, &tend);
