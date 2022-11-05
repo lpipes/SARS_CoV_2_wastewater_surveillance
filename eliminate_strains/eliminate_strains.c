@@ -1031,6 +1031,7 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 	free(bad_base_char);
 	free(bad_bases_count);
 	free(variant_sites_updated);
+	number_remaining=0;
 	for(i=0; i<number_of_strains; i++){
 		if ( names_of_strains[i][0] != '\0' ){
 			//printf("Remaining strain: %s\n",names_of_strains[i]);
