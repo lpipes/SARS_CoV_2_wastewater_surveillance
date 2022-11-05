@@ -2448,9 +2448,9 @@ int main(int argc, char **argv){
 	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.llr==1){
-		sprintf(buffer,"Rscript EM_C_LLR_updated.R -i %s -f %lf -e %lf -l -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
 	}else{
-		sprintf(buffer,"Rscript EM_C_LLR_updated.R -i %s -f %lf -e %lf -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
+		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
 	}
 	system(buffer);
 	free(buffer);
