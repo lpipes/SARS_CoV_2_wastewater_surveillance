@@ -717,7 +717,7 @@ int calculateAlleleFreq_paired(FILE* sam, double** allele, int length_of_MSA, ch
 	return number_remaining;
 }
 
-int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int* reference_index, int min_strains_remaining, int max_strains_remaining, char print_counts[]){
+int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MSA, int number_of_strains, char** names_of_strains, double freq_threshold, int maxname, struct timespec tstart, struct timespec tend, int number_of_variant_sites, int* variant_sites, int coverage, int* reference_index, int min_strains_remaining, int max_strains_remaining, char print_counts[], int* max_sam_length, char print_deletions[], double deletion_threshold){
 	int i,j;
 	char buffer [FASTA_MAXLINE];
 	char *s;
@@ -728,6 +728,10 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 		cigar_chars[i]='\0';
 	}
 	clock_gettime(CLOCK_MONOTONIC, &tstart);
+	double* deletions = (double*)malloc(length_of_MSA*sizeof(double));
+	for(i=0; i<length_of_MSA; i++){
+		deletions[i]=0;
+	}
 	while( fgets(buffer,FASTA_MAXLINE,sam) != NULL ){
 		if ( buffer[0] != '@'){
 			char* buffer_copy = strdup(buffer);
@@ -811,6 +815,9 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 				}
 				if (cigar_chars[i] == 'D'){
 					start_ref = cigar[i] + start_ref;
+					for(j=0; j<cigar[i]; j++){
+						deletions[reference_index[j+start_ref+position]]++;
+					}
 				}
 			}
 			free(buffer_copy);
@@ -824,6 +831,17 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 			fprintf(allele_counts_file,"%d\t%lf\t%lf\t%lf\t%lf\n",i,allele[i][0],allele[i][1],allele[i][2],allele[i][3]);	
 		}
 		fclose(allele_counts_file);
+	}
+	if (print_deletions[0] != '\0'){
+		FILE* deletion_sites_file;
+		if (( deletion_sites_file = fopen(print_deletions,"w")) == (FILE *) NULL ) fprintf(stderr, "Deletion sites file could not be opened.\n");
+		fprintf(deletion_sites_file,"Site\tFrequency\n");
+		for(i=0; i<length_of_MSA; i++){
+			if (deletions[i]/max_sam_length[1]>deletion_threshold){
+				fprintf(deletion_sites_file,"%d\t%lf\n",i,deletions[i]/max_sam_length[1]);
+			}
+		}
+		fclose(deletion_sites_file);
 	}
 	int covered=0;
 	for(i=0; i<length_of_MSA; i++){
@@ -1963,8 +1981,8 @@ void writeMismatchMatrix( FILE* outfile, FILE* samfile, char** MSA, int* strains
 				start=0;
 				start_ref=0;
 				for(j=0; j<cigar_char_count; j++){
-					int position_in_MSA = reference_index[k+position+start_ref];
 					for(k=0; k<cigar[j]; k++){
+						int position_in_MSA = reference_index[k+position+start_ref];
 						if (cigar_chars[j] == 'M' ){
 							if ( sequence[k+start] == 'A' || sequence[k+start] == 'a' ){
 								//if ( MSA[strains_kept[i]][reference[k+position+start_ref]] != 'A' && MSA[strains_kept[i]][reference[k+position+start_ref]] != '-' ){
@@ -2290,7 +2308,7 @@ int main(int argc, char **argv){
 	if ( opt.paired==1 ){
 		number_of_strains_remaining=calculateAlleleFreq_paired(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,reference_index,opt.min_strains,opt.max_strains,opt.print_counts,max_sam_length,opt.print_deletions,opt.deletion_threshold);
 	}else{
-		number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,reference_index,opt.min_strains,opt.max_strains,opt.print_counts);
+		number_of_strains_remaining=calculateAlleleFreq(sam_file,allele_frequency,length_of_MSA,MSA,number_of_strains,names_of_strains,opt.freq,max_name_length,tstart,tend,number_of_variant_sites,variant_sites,opt.coverage,reference_index,opt.min_strains,opt.max_strains,opt.print_counts,max_sam_length,opt.print_deletions,opt.deletion_threshold);
 	}
 	fclose(sam_file);
 	for(i=0; i<length_of_MSA; i++){
