@@ -734,7 +734,12 @@ int calculateAlleleFreq(FILE* sam, double** allele, int length_of_MSA, char** MS
 	}
 	while( fgets(buffer,FASTA_MAXLINE,sam) != NULL ){
 		if ( buffer[0] != '@'){
+			max_sam_length[1]++;
 			char* buffer_copy = strdup(buffer);
+			int length_of_sam = strlen(buffer);
+			if (length_of_sam > max_sam_length[0] ){
+				max_sam_length[0] = length_of_sam;
+			}
 			s = strtok(buffer,"\t");
 			for(i=0; i<3; i++){
 				s = strtok(NULL,"\t");
