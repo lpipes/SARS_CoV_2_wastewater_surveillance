@@ -134,4 +134,4 @@ Crits-Christoph A, Kantor RS, Olm MR, Whitney ON, Al-Shayeb B, Lou YC, Flamholz 
 <a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
 
 # Citations
-Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>.
+Pipes, L., Chen, Z., Afanaseva, S., & Nielsen, R. (2022). Estimating the relative proportions of SARS-CoV-2 haplotypes from wastewater samples. Cell reports methods, 100313.
