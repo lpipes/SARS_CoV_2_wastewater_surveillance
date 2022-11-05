@@ -21,7 +21,7 @@ suppressMessages(library(snow))
 
 spec <- matrix(
   c("mismatch",  "i", 2, "character", "[REQUIRED] Name of the file containing the mismatch matrix. (This should be a TXT file.)",
-    "error_rate", "e", 1, "double",  "[REQUIRED] Assumed error rate in the EM algorithm (default = 0.005).",
+    "error_rate", "e", 2, "double",  "Assumed error rate in the EM algorithm (default = 0.005).",
     "filter",  "f", 2, "double",  "[REQUIRED] The allele frequency cut-off we used to remove ‘unlikely’ strains.",
     "llr","l",0,"logical","Use this to perform the LLR procedure for each strain.",
     "num_show","n",1,"integer","[REQUIRED] Maximal number of strains to show in the plot (default = 10).",
