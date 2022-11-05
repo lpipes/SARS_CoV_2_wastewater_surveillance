@@ -26,6 +26,7 @@ To install
 
 #Cleaning your reads
 To run the method. First, please quality filter the reads. The method requires high quality reads as the variant calling in the method is sensitive to bad calls. I recommend the FASTX_toolkit (https://github.com/agordon/fastx_toolkit) in this way with your reads (quality filtering as well as removing DNA damage at both 5' and 3' ends of reads):
+	
 	#First quality filter reads
 	fastq_quality_trimmer -v -t 35 -i reads.fastq -o reads_trimmed1.fastq -Q33
 	#Second remove 15 bases from the end of reads and remove sequences with length less than 65bp
