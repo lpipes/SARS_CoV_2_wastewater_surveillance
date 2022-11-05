@@ -1,12 +1,20 @@
 # Method for estimating relative proportions of SARS-CoV-2 strains from wastewater samples
 We present a method for estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. The method uses an initial step to remove unlikely strains, imputation of missing nucleotides using the global SARS-CoV-2 phylogeny, and an Expectation-Maximization (EM) algorithm for obtaining maximum likelihood estimates of the proportions of different strains in a sample.
 
-View the preprint here: <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2</a>
+View the manuscript here: <a href="https://www.sciencedirect.com/science/article/pii/S266723752200203X">https://www.sciencedirect.com/science/article/pii/S266723752200203X</a>
 
-The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 1,499,078 non-redundant strains <a href="https://doi.org/10.5281/zenodo.5838946">download the imputed multiple sequence alignment<a/> and run the `eliminate_strains` program. <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must be installed and in your path.
+The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 3,503,116 non-redundant strains from May 1, 2022. Download the required database associated files:
 
-<a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
+Imputed Multiple Sequence Alignment (-i): <a href="https://drive.google.com/file/d/1AJTb4IL07VHhLWgMEmdOC1RI2sx2TWaK/view?usp=sharing">https://drive.google.com/file/d/1AJTb4IL07VHhLWgMEmdOC1RI2sx2TWaK/view?usp=sharing<a/>
 
+Variants file (-v): <a href="https://drive.google.com/file/d/1AnV1-rDABYc4VZTvQze_oft817JzWkBh/view?usp=sharing">https://drive.google.com/file/d/1AnV1-rDABYc4VZTvQze_oft817JzWkBh/view?usp=sharing</a>
+
+MSA reference file (-g): <a href="https://drive.google.com/file/d/1J8kNdHZFlMx-5MKzI7ISKH0lrWR-OHeF/view?usp=sharing">https://drive.google.com/file/d/1J8kNdHZFlMx-5MKzI7ISKH0lrWR-OHeF/view?usp=sharing</a>
+
+<a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must also be installed and in your path.
+
+Download a list of the redundant strains in the database (labeled c1, c2, c3, etc.): <a href="https://drive.google.com/file/d/10JvY-J6qnJwM5mlUMetkdzOOu8XGgxwH/view?usp=sharing">https://drive.google.com/file/d/10JvY-J6qnJwM5mlUMetkdzOOu8XGgxwH/view?usp=sharing</a>
+ 
 # Installation
 To install
 	
@@ -16,8 +24,17 @@ To install
 	cd ../imputation
 	make
 
+#Cleaning your reads
+To run the method. First, please quality filter the reads. The method requires high quality reads as the variant calling in the method is sensitive to bad calls. I recommend the FASTX_toolkit (https://github.com/agordon/fastx_toolkit) in this way with your reads (quality filtering as well as removing DNA damage at both 5' and 3' ends of reads):
+	#First quality filter reads
+	fastq_quality_trimmer -v -t 35 -i reads.fastq -o reads_trimmed1.fastq -Q33
+	#Second remove 15 bases from the end of reads and remove sequences with length less than 65bp
+	fastx_trimmer -m 65 -t 15 -i reads_trimmed1.fastq -o reads_trimmed2.fastq
+	#Third remove 15 bases from the start of the reads
+	fastx_trimmer -f 15 -i reads_trimmed2.fastq -o reads_trimmed3.fastq
+
 # Usage
-`eliminate_strains` filters unlikely SARS-CoV-2 genomes, prints a mismatch matrix, and also runs the `EM_C_LLR.R` program.
+`eliminate_strains` filters unlikely SARS-CoV-2 genomes, prints a mismatch matrix, and also runs the `EM_C_LLR.R` program, which needs to be in your path.
 
 	eliminate_strains [OPTIONS]
 	
@@ -36,16 +53,29 @@ To install
 		-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]
 		-a, --fasta				reads are in FASTA format [default: FASTQ]
 		-l, --llr				Perform the LLR procedure
-	
+		-m, --min [decimal]			Minimum strains remaining to invoke iterative procedure [default: 100]
+		-x, --max [decimal]			Maximum strains remaining for EM algorithm [default: 10000]
+		-b, --print-allele-counts [FILE]	Print allele counts to file
+		-t, --cores [decimal]			Number of cores [default: 1]
+		-g, --msa-reference [FILE]		MSA reference index
+		-n, --no-read-bam			Don't thread, don't read in bam
+		-r, --print-deletions [FILE]		Print sites with deletions
+		-j, --threshold-for-deleted-sites	Threshold to print deleted sites [default: 0.001]
+
 To use the bowtie2 database compatible with the pre-built database use the following bowtie2 database:
 	
-	eliminate_strains/EPI_ISL_402124.fasta
+	eliminate_strains/MN908947.3.fasta
 
-And the following variant sites file:
+Example command to run eliminate_strains (with a maximum of 35,000 strains remaining after elimination):
+
+	eliminate_strains -i final_seqs.fasta -s try_out.sam -f 0.01 -o try_mismatch_matrix -v variants_0501.txt -d MN908947.3 -0 reads_trimmed3.fastq -e 0.005 -g EPI_ISL_402124.fasta -x 35000 -b allele_counts.txt -r deletions.txt
+
+
+To impute and build a new database use `sarscov2_imputation`. You must have an account with GISAID and download the Audacity tree and the masked MSA file. You can run our imputation pipeline in the `imputation_scripts` directory (fill in the X with appropriate download dates from GISAID):
 	
-	eliminate_strains/global_variants.txt
+	./imputation.sh GISAID-hCoV-19-phylogeny-XXXX-XX-XX.zip mmsa_XXXX-XX-XX.tar.xz
 
-To impute and build a new database use `sarscov2_imputation`.
+`imputation.sh` requires `sarscov2_imputation` in your path.
 
 	sarscov2_imputation [OPTIONS]
 	
@@ -97,6 +127,8 @@ Simulations used in the manuscript can be downloaded at <a href="https://doi.org
 # References
 
 Crits-Christoph A, Kantor RS, Olm MR, Whitney ON, Al-Shayeb B, Lou YC, Flamholz A, Kennedy LC, Greenwald H, Hinkle A, et al. Genome sequencing of sewage detects regionally prevalent SARS-CoV-2 variants. MBio. 2021;12(1):e02703–20.
+
+<a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
 
 # Citations
 Pipes L, Chen Z, Afanaseva S, Nielsen R (2022) Estimating the relative proportions of SARS-CoV-2 strains from wastewater samples. <a href="https://www.medrxiv.org/content/10.1101/2022.01.13.22269236v2">medRxiv</a>.
