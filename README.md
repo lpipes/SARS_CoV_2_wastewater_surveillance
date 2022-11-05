@@ -68,22 +68,21 @@ To impute and build a new database use `sarscov2_imputation`.
 <b>Figure 2</b>. Estimated proportions of the top 25 strains estimated from wastewater shotgun sequencing data from Crits-Cristoph et al. (2021) and their log-likelihood ratios. Strains with an asterisk (*) are identical with other strains. 
 
 ## Notes for EM.R
-Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[-filter|f] [<double>]] [-[-llr|l]] [-[-num_show|n] <integer>] [-[-help|h]]
-    
-    -i|--mismatch      Name of file containing the mismatch matrix. (This should be a TXT file.)
-    
-    -e|--error_rate    Assumed error rate in the EM algorithm (default = 0.005).
-    
-    -f|--filter        The allele frequency cut-off we used to remove ‘unlikely’ strains.
-    
-    -l|--llr           Use this to perform the LLR procedure.
-    
-    -n|--num_show      Maximal number of strains to show in the plot (default = 10).
-    
-    -h|--help          Show help.
+Usage: EM_C_LLR.R [-[-mismatch|i] [<character>]] [-[-error_rate|e] <double>] [-[-filter|f] [<double>]] [-[-llr|l]] [-[-num_show|n] <integer>] [-[-help|h]] [-[-site_LLR|s]] [-[-variant|v] <character>] [-[-read_count|b] <character>] [-[-ref_file|r] <character>] [-[-deletion_file|d] <character>] [-[-core_num|c] <integer>]
 	
-    -r|--core_num      Number of cores to use.	
-    
+    -i|--mismatch  [REQUIRED,FILE]                  Name of the file containing the mismatch matrix. (This should be a TXT file.)
+    -e|--error_rate                                 Assumed error rate in the EM algorithm (default = 0.005).
+    -f|--filter  [REQUIRED,decimal]                 The allele frequency cut-off we used to remove ‘unlikely’ strains.
+    -l|--llr                                        Use this to perform the LLR procedure for each strain.
+    -n|--num_show [REQUIRED,decimal]                Maximal number of strains to show in the plot (default = 10).
+    -h|--help                                       Show help.
+    -s|--site_LLR                                   Perform the LLR procedure for each site.
+    -v|--variant [REQUIRED,FILE]                    Name of the file containing variant sites.
+    -b|--read_count [REQUIRED if test LLR,FILE]     Name of the file containing allele counts from reads.
+    -r|--ref_file [REQUIRED if test LLR,FILE]       MSA FASTA of SARS-CoV-2 reference strains.
+    -d|--deletion_file [REQUIRED if test LLR,FILE]  Deletion proportion for each site.
+    -c|--core_num [REQUIRED,decimal]                Number of cores to use
+  
  (Rely on getopt package.)
 
 The estimated proportion of candidate strains will be in the .csv file whose name begins with "em_output_". Also, a barplot will be in the .pdf file whose name starts with "proportion_plot_". Only those strains with an estimated proportion larger than 1% will appear in this plot. If there are **unidentifiable strains**, groups of unidentifiable strains will be printed to a .txt file whose name begins with "Unidentifiable_Strains_" and their group index will appear in the estimated proportions instead of the originial names. If there is no identifiability issue, this .txt file will not be produced.
