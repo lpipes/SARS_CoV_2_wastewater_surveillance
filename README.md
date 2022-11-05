@@ -72,6 +72,8 @@ Example command to run eliminate_strains (with a maximum of 35,000 strains remai
 	eliminate_strains -i final_seqs.fasta -s try_out.sam -f 0.01 -o try_mismatch_matrix -v variants_0501.txt -d MN908947.3 -0 reads_trimmed3.fastq -e 0.005 -g EPI_ISL_402124.fasta -x 35000 -b allele_counts.txt -r deletions.txt
 
 
+After `eliminate_strains` is run, run `EM_C_LLR.R` on the `-o` mismatch matrix (see below).
+
 To impute and build a new database use `sarscov2_imputation`. You must have an account with GISAID and download the Audacity tree and the masked MSA file. You can run our imputation pipeline in the `imputation_scripts` directory (fill in the X with appropriate download dates from GISAID):
 	
 	./imputation.sh GISAID-hCoV-19-phylogeny-XXXX-XX-XX.zip mmsa_XXXX-XX-XX.tar.xz
