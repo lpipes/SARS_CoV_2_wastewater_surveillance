@@ -24,7 +24,7 @@ To install
 	cd ../imputation
 	make
 
-#Cleaning your reads
+# Cleaning your reads
 To run the method. First, please quality filter the reads. The method requires high quality reads as the variant calling in the method is sensitive to bad calls. I recommend the FASTX_toolkit (https://github.com/agordon/fastx_toolkit) in this way with your reads (quality filtering as well as removing DNA damage at both 5' and 3' ends of reads):
 	
 	#First quality filter reads
