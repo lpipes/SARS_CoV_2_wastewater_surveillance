@@ -127,11 +127,11 @@ I'm still seeking ways to run SQUAREM in a parallel way.
 # Data from manuscript
 Simulations used in the manuscript can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838942">https://doi.org/10.5281/zenodo.5838942</a>. The imputed MSA can be downloaded at <a href="https://doi.org/10.5281/zenodo.5838946">https://doi.org/10.5281/zenodo.5838946</a>. Identical strains are contained in the headers of the MSA separated by colons.
 
+<a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
+
 # References
 
 Crits-Christoph A, Kantor RS, Olm MR, Whitney ON, Al-Shayeb B, Lou YC, Flamholz A, Kennedy LC, Greenwald H, Hinkle A, et al. Genome sequencing of sewage detects regionally prevalent SARS-CoV-2 variants. MBio. 2021;12(1):e02703–20.
-
-<a href="https://zenodo.org/badge/latestdoi/308476526"><img src="https://zenodo.org/badge/308476526.svg" alt="DOI"></a>
 
 # Citations
 Pipes, L., Chen, Z., Afanaseva, S., & Nielsen, R. (2022). Estimating the relative proportions of SARS-CoV-2 haplotypes from wastewater samples. Cell reports methods, 100313.
