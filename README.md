@@ -78,7 +78,7 @@ To impute and build a new database use `sarscov2_imputation`. You must have an a
 	
 	./imputation.sh GISAID-hCoV-19-phylogeny-XXXX-XX-XX.zip mmsa_XXXX-XX-XX.tar.xz
 
-`imputation.sh` requires `sarscov2_imputation` in your path.
+`imputation.sh` requires `sarscov2_imputation` in your path and requires the R `ape` package version 5.6-3 or later (<a href="https://github.com/emmanuelparadis/ape">https://github.com/emmanuelparadis/ape</a>).
 
 	sarscov2_imputation [OPTIONS]
 	
