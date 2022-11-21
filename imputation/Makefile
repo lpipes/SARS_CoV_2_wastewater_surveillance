@@ -8,7 +8,7 @@ CFLAGS = -w
 DBGCFLAGS = -g
 # -lm links the math library
 #  -lz links the gz library
-LIBS = -lm -lz
+LIBS = -lm -lz -std=gnu99
 #sources
 SOURCES = sarscov2_imputation.c math.c options.c 
 HASHMAP = hashmap.c
