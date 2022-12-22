@@ -3,17 +3,17 @@ We present a method for estimating the relative proportions of SARS-CoV-2 strain
 
 View the manuscript here: <a href="https://www.sciencedirect.com/science/article/pii/S266723752200203X">https://www.sciencedirect.com/science/article/pii/S266723752200203X</a>
 
-The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 3,503,116 non-redundant strains from May 1, 2022. Download the required database associated files:
+The method has 2 different components: estimating proportions of SARS-CoV-2 strains and imputation of SARS-CoV-2 reference strains. To estimate proportions of SARS-CoV-2 strains from short-read sequencing data on a pre-built database of 5,254,113 non-redundant strains from November 2, 2022. Download the required database associated files:
 
-Imputed Multiple Sequence Alignment (-i): <a href="https://drive.google.com/file/d/1AJTb4IL07VHhLWgMEmdOC1RI2sx2TWaK/view?usp=sharing">https://drive.google.com/file/d/1AJTb4IL07VHhLWgMEmdOC1RI2sx2TWaK/view?usp=sharing<a/>
+Imputed Multiple Sequence Alignment (-i): <a href="http://149.165.153.149/download_gz/seqs_final_out.fasta.gz">seqs_final_out.fasta.gz<a/> [34GB]
 
-Variants file (-v): <a href="https://drive.google.com/file/d/1AnV1-rDABYc4VZTvQze_oft817JzWkBh/view?usp=sharing">https://drive.google.com/file/d/1AnV1-rDABYc4VZTvQze_oft817JzWkBh/view?usp=sharing</a>
+Variants file (-v): <a href="http://149.165.153.149/download_variants/variants.txt">variants.txt</a>
 
 MSA reference file (-g): <a href="https://drive.google.com/file/d/1J8kNdHZFlMx-5MKzI7ISKH0lrWR-OHeF/view?usp=sharing">https://drive.google.com/file/d/1J8kNdHZFlMx-5MKzI7ISKH0lrWR-OHeF/view?usp=sharing</a>
 
 <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must also be installed and in your path.
 
-Download a list of the redundant strains in the database (labeled c1, c2, c3, etc.): <a href="https://drive.google.com/file/d/10JvY-J6qnJwM5mlUMetkdzOOu8XGgxwH/view?usp=sharing">https://drive.google.com/file/d/10JvY-J6qnJwM5mlUMetkdzOOu8XGgxwH/view?usp=sharing</a>
+Download a list of the redundant strains in the database (labeled c1, c2, c3, etc.): <a href="http://149.165.153.149/download_redundant/redundant.txt">redundant.txt</a>
  
 # Installation
 To install
