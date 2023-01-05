@@ -10,7 +10,7 @@ void align_references(int number_of_problematic_sites, int* problematic_sites, c
 	ssize_t read;
 	Alignment_ref = fopen(MSA_reference,"r");
 	if (Alignment_ref == NULL){
-		printf("Error!");
+		printf("Error! Cannot open MSA reference file.");
 		exit(1);
 	}
 	char *EPI = (char*)malloc(30000*sizeof(char));
@@ -28,7 +28,7 @@ void align_references(int number_of_problematic_sites, int* problematic_sites, c
 	FILE* Wuhan_file;
 	Wuhan_file = fopen("MN908947.3.fasta","r");
 	if (Wuhan_file == NULL){
-		printf("Error!");
+		printf("Error! Cannot open MN908947.3.fasta. Please make sure this file is in the current directory.");
 		exit(1);
 	}
 	char *Wuhan = (char*)malloc(30000*sizeof(char));
