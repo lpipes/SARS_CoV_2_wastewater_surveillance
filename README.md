@@ -9,7 +9,7 @@ Imputed Multiple Sequence Alignment (-i): <a href="http://149.165.153.149/downlo
 
 Variants file (-v): <a href="http://149.165.153.149/download_variants/variants.txt">variants.txt</a>
 
-MSA reference file (-g): <a href="http://149.165.153.149/download_seq/EPI_ISL_402124.fasta">http://149.165.153.149/download_seq/EPI_ISL_402124.fasta</a>
+MSA reference file (-g): <a href="http://149.165.153.149/download_seq/EPI_ISL_402124.fasta">EPI_ISL_402124.fasta</a>
 
 <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2</a> must also be installed and in your path.
 
