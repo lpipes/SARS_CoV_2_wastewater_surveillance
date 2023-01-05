@@ -45,7 +45,7 @@ To run the method. First, please quality filter the reads. The method requires h
 		-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]
 		-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm
 		-v, --variant_sites [REQUIRED,FILE]	list of variant sites
-		-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database
+		-g, --msa-reference [REQUIRED,FILE]	MSA reference index
 		-p, --paired				using paired-reads
 		-0, --single_end_file [FILE]		single-end reads
 		-1, --forward_file [FILE]		if using paired-reads, the forward reads file
@@ -58,8 +58,7 @@ To run the method. First, please quality filter the reads. The method requires h
 		-x, --max [decimal]			Maximum strains remaining for EM algorithm [default: 10000]
 		-b, --print-allele-counts [FILE]	Print allele counts to file
 		-t, --cores [decimal]			Number of cores [default: 1]
-		-g, --msa-reference [FILE]		MSA reference index
-		-n, --no-read-bam			Don't thread, don't read in bam
+		-n, --no-read-sam			Don't thread, don't read in sam file to memory
 		-r, --print-deletions [FILE]		Print sites with deletions
 		-j, --threshold-for-deleted-sites	Threshold to print deleted sites [default: 0.001]
 
