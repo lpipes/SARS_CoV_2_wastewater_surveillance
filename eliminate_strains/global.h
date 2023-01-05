@@ -17,7 +17,6 @@ typedef struct Options{
 	char single_end_file[1000];
 	char forward_end_file[1000];
 	char reverse_end_file[1000];
-	char bowtie_reference_db[1000];
 	double error;
 	int coverage;
 	int llr;

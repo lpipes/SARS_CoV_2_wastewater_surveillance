@@ -12,7 +12,6 @@ static struct option long_options[]=
 	{"single_end", required_argument, 0, '0'},
 	{"forward_read", required_argument, 0, '1'},
 	{"reverse_read", required_argument, 0, '2'},
-	{"bowtie-db", required_argument, 0, 'd'},
 	{"EM-error",required_argument,0, 'e'},
 	{"coverage",required_argument,0,'c'},
 	{"fasta",no_argument,0,'a'},
@@ -22,7 +21,7 @@ static struct option long_options[]=
 	{"print-allele-counts",required_argument,0,'b'},
 	{"cores",required_argument,0,'t'},
 	{"msa-reference",required_argument,0,'g'},
-	{"no-read-bam",no_argument,0,'n'},
+	{"no-read-sam",no_argument,0,'n'},
 	{"print-deletions",required_argument,0,'r'},
 	{0,0,0,0}
 };
@@ -35,7 +34,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-f, --freq [REQUIRED,decimal]		allele frequency to filter unlikely strains [default: 0.01]\n\
 	-o, --outfile [REQUIRED,FILE]		output file to print mismatch matrix for EM algorithm\n\
 	-v, --variant_sites [REQUIRED,FILE]	list of variant sites\n\
-	-d, --bowtie-db [REQUIRED,FILE]		path to Wuhan-Hu-1 bowtie2 database\n\
+	-g, --msa-reference [REQUIRED,FILE]	MSA reference index\n\
 	-p, --paired				using paired-reads\n\
 	-0, --single_end_file [FILE]		single-end reads\n\
 	-1, --forward_file [FILE]		if using paired-reads, the forward reads file\n\
@@ -48,8 +47,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-x, --max [decimal]			Maximum strains remaining for EM algorithm [default: 10000]\n\
 	-b, --print-allele-counts [FILE]	Print allele counts to file\n\
 	-t, --cores [decimal]			Number of cores [default: 1]\n\
-	-g, --msa-reference [FILE]		MSA reference index\n\
-	-n, --no-read-bam			Don't thread, don't read in bam\n\
+	-n, --no-read-sam			Don't thread, don't read in sam file to memory\n\
 	-r, --print-deletions [FILE]		Print sites with deletions\n\
 	-j, --threshold-for-deleted-sites	Threshold to print deleted sites [default: 0.001]\n\
 	\n";
@@ -67,17 +65,12 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplnai:s:f:o:v:0:1:2:d:e:t:c:m:x:b:g:r:j:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hplnai:s:f:o:v:0:1:2:e:t:c:m:x:b:g:r:j:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
 				print_help_statement();
 				exit(0);
-				break;
-			case 'd':
-				success = sscanf(optarg, "%s", opt->bowtie_reference_db);
-				if (!success)
-					fprintf(stderr, "Invalid bowtie db\n");
 				break;
 			case 'b':
 				success = sscanf(optarg, "%s", opt->print_counts);
