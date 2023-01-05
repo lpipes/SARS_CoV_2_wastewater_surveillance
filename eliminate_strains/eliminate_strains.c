@@ -2096,7 +2096,7 @@ int findEndOfPolyA(char **MSA, int length_of_MSA, int ref_index, int* reference)
 }
 int process_problematic_sites(int* problematic_sites){
 	FILE* file;
-	if (( file = fopen("problematic_sites_sarsCov2.vcf","r")) == (FILE *) NULL ) fprintf(stderr, "File could not be opened.\n");
+	if (( file = fopen("problematic_sites_sarsCov2.vcf","r")) == (FILE *) NULL ) fprintf(stderr, "Problematic Sites File could not be opened.\n");
 	char buffer[1000];
 	char name[30];
 	int position;
