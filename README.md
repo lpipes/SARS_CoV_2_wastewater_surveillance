@@ -68,11 +68,11 @@ To use the bowtie2 database compatible with the pre-built database use the follo
 
 Example command to run eliminate_strains with single-end FASTQ reads (with a maximum of 35,000 strains remaining after elimination):
 
-	eliminate_strains -i seqs_final_out.fasta.gz -s alignment.sam -f 0.01 -o mismatch.txt -v variants.txt -0 reads_trimmed3.fastq -e 0.005 -g EPI_ISL_402124.fasta -x 35000 -b allele_counts.txt -r deletions.txt
+	eliminate_strains -i seqs_final_out.fasta.gz -s alignment.sam -f 0.01 -o mismatch.txt -v variants.txt -0 reads_trimmed3.fastq -e 0.005 -g EPI_ISL_402124.fasta -x 35000
 
 Example command to run eliminate_strains with paired-end FASTQ reads (with a maximum of 35,000 strains remaining after elimination, and without reading the sam file into memory):
 
-	eliminate_strains -i seqs_final_out.fasta.gz -s alignment.sam -f 0.01 -o mismatch.txt -v variants.txt -p -1 reads_trimmed_forward.fastq -2 reads_trimmed_reverse.fastq -n -e 0.005 -g EPI_ISL_402124.fasta -x 35000 -b allele_counts.txt -r deletions.txt
+	eliminate_strains -i seqs_final_out.fasta.gz -s alignment.sam -f 0.01 -o mismatch.txt -v variants.txt -p -1 reads_trimmed_forward.fastq -2 reads_trimmed_reverse.fastq -n -e 0.005 -g EPI_ISL_402124.fasta -x 35000
 
 After `eliminate_strains` is run, run `EM_C_LLR.R` on the `-o` mismatch matrix (see below).
 
