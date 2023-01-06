@@ -75,14 +75,26 @@ if (nrow(data) < 20) {
   print("Not enough reads!")
   quit()
 }
+
+opt$mismatch <- gsub(".txt", "", opt$mismatch, fixed = T)
+
+relative_path <- str_split_1(opt$mismatch, pattern = "/")
+
+opt$mismatch <- relative_path[length(relative_path)]
+
+if ( length(relative_path) == 1 ){
+	relative_path<-c(".")
+}else{
+	relative_path<-paste(relative_path[1:length(relative_path)-1],collapse="/")
+}
+
 if (ncol(data)<3){
-  r_file <- file(paste0("output_", opt$mismatch, ".txt"), "w")
+  r_file <- file(paste0(relative_path,"/output_", opt$mismatch, ".txt"), "w")
   write("There is no strain left after filtering", file = r_file, append = T)
   close(r_file)
   quit()
 }
 
-opt$mismatch <- gsub(".txt", "", opt$mismatch, fixed = T)
 
 ptm <- proc.time()
 strains <- colnames(data)[3:ncol(data)]
@@ -96,13 +108,13 @@ if (k==1){
   em_output_df <- data.frame(em_output_df)
   colnames(em_output_df) <- c("p", "names.arg")
   
-  write.csv(em_output_df, file = paste("./em_output_", opt$mismatch, ".csv", sep = ""))
+  write.csv(em_output_df, file = paste(relative_path,"/em_output_", opt$mismatch, ".csv", sep = ""))
   
   # d <- data.table(em_output_df, key="p")
   d <- data.frame(1, names.arg)
   colnames(d)[1] <- "p"
   
-  pdf(file = paste("./proportion_plot_", opt$mismatch, ".pdf", sep = ""), width = 15, height = 10)
+  pdf(file = paste(relative_path,"/proportion_plot_", opt$mismatch, ".pdf", sep = ""), width = 15, height = 10)
   ggplot(data = d, mapping = aes(x = p, y = reorder(names.arg, p))) +
     geom_bar(stat = "identity", fill = "lightblue") +
     labs(x = "Proportion", y = NULL) +
@@ -164,7 +176,7 @@ p.one <- rep(0, k)
 p.one[which.max(loglikelihoods)] <- 1
 uni.like <- unique(loglikelihoods)
 if (length(uni.like) != length(loglikelihoods)) {
-  r_file <- file(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"), "w")
+  r_file <- file(paste0(relative_path,"/Unidentifiable_Strains_", opt$mismatch, ".txt"), "w")
   unident <- 0
   for (i in uni.like) {
     if (sum(loglikelihoods == i) > 1) {
@@ -219,7 +231,7 @@ res2 <- turboem(
     stoptype = "maxtime", maxtime = 14400
   )
 )
-cat(paste0("\nDifference between two optimazations from different starting points ",
+cat(paste0("\nDifference between two optimizations from different starting points ",
              signif(sum(abs(pars(res)-pars(res2)))),2))
 
 p <- pars(res)
@@ -336,9 +348,9 @@ em_output_df$flag <- as.logical(em_output_df$flag)
 em_output_df$LLR[em_output_df$flag] <- ">>100"
 
 if (!is.null(opt$llr)){
-  write.csv(em_output_df[,1:3], file = paste("./em_output_", opt$mismatch, ".csv", sep = ""),row.names = F)
+  write.csv(em_output_df[,1:3], file = paste(relative_path,"/em_output_", opt$mismatch, ".csv", sep = ""),row.names = F)
 } else {
-  write.csv(em_output_df[,1:2], file = paste("./em_output_", opt$mismatch, ".csv", sep = ""),row.names = F)
+  write.csv(em_output_df[,1:2], file = paste(relative_path,"/em_output_", opt$mismatch, ".csv", sep = ""),row.names = F)
 }
 
 
@@ -356,7 +368,7 @@ if (is.null(opt$num_show)){
 d <- cbind(d,flag = factor((d$LLR>2)+(d$LLR>4),levels = c(0,1,2)))
 levels(d$flag) <- c("LLR<=2","2<LLR<=4","LLR>4")
 
-pdf(file = paste("./proportion_plot_", opt$mismatch, ".pdf", sep = ""), width = 15, height = 10)
+pdf(file = paste(relative_path,"/proportion_plot_", opt$mismatch, ".pdf", sep = ""), width = 15, height = 10)
 if (!is.null(opt$llr)){
   prop_plot <- ggplot(data = d, mapping = aes(x = p, y = reorder(names.arg, p), fill = flag)) +
     geom_bar(stat = "identity") +
@@ -402,8 +414,8 @@ if (!is.null(opt$site_LLR)){
   ref_name <- gsub(">","",ref[seq(1,length(ref),2)])
   ref <- ref[seq(2,length(ref),2)]
   names(ref) <- ref_name
-  if (file.exists(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))){
-    un_group <- readLines(paste0("Unidentifiable_Strains_", opt$mismatch, ".txt"))
+  if (file.exists(paste0(relative_path,"/Unidentifiable_Strains_", opt$mismatch, ".txt"))){
+    un_group <- readLines(paste0(relative_path,"/Unidentifiable_Strains_", opt$mismatch, ".txt"))
     if (length(un_group)>=2){
       group_tmp <- which(str_detect(un_group,"Group"))
       un_group_list <- vector("list",length(group_tmp))
@@ -499,7 +511,7 @@ if (!is.null(opt$site_LLR)){
                            LLR = abs(site_LLR))
   site_frame <- filter(site_frame,!is.na(LLR))
   site_frame <- site_frame[order(site_frame$LLR,decreasing = T),]
-  write.csv(site_frame,file = paste0(opt$mismatch,"_siteLLR.csv"))
+  write.csv(site_frame,file = paste0(relative_path,"/",opt$mismatch,"_siteLLR.csv"))
 }
 
 }
