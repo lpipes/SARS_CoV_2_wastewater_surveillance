@@ -18,6 +18,7 @@ typedef struct Options{
 	char forward_end_file[1000];
 	char reverse_end_file[1000];
 	double error;
+	int clean_reads;
 	int coverage;
 	int llr;
 	int min_strains;

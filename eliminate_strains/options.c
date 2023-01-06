@@ -23,6 +23,7 @@ static struct option long_options[]=
 	{"msa-reference",required_argument,0,'g'},
 	{"no-read-sam",no_argument,0,'n'},
 	{"print-deletions",required_argument,0,'r'},
+	{"clean-my-reads",no_argument,0,'d'},
 	{0,0,0,0}
 };
 
@@ -40,6 +41,7 @@ char usage[] = "\neliminate_strains [OPTIONS]\n\
 	-1, --forward_file [FILE]		if using paired-reads, the forward reads file\n\
 	-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file\n\
 	-e, --EM-error [decimal]		error rate for EM algorithm\n\
+	-d, --clean-my-reads                    Clean reads with fastq_quality_trimmer [must have FASTQ reads]\n\
 	-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]\n\
 	-a, --fasta				reads are in FASTA format [default: FASTQ]\n\
 	-l, --llr				Perform the LLR procedure\n\
@@ -65,12 +67,15 @@ void parse_options(int argc, char **argv, Options *opt){
 		exit(0);
 	}
 	while(1){
-		c=getopt_long(argc,argv,"hplnai:s:f:o:v:0:1:2:e:t:c:m:x:b:g:r:j:",long_options, &option_index);
+		c=getopt_long(argc,argv,"hpdlnai:s:f:o:v:0:1:2:e:t:c:m:x:b:g:r:j:",long_options, &option_index);
 		if (c==-1) break;
 		switch(c){
 			case 'h':
 				print_help_statement();
 				exit(0);
+				break;
+			case 'd':
+				opt->clean_reads=1;
 				break;
 			case 'b':
 				success = sscanf(optarg, "%s", opt->print_counts);

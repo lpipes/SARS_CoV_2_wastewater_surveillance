@@ -34,6 +34,8 @@ To run the method. First, please quality filter the reads. The method requires h
 	#Third remove 15 bases from the start of the reads
 	fastx_trimmer -f 15 -i reads_trimmed2.fastq -o reads_trimmed3.fastq
 
+Running `-d` will clean your reads in this way. Please make sure fastq_quality_trimmer is installed and in your path.
+
 # Usage
 `eliminate_strains` filters unlikely SARS-CoV-2 genomes, prints a mismatch matrix, and also runs the `EM_C_LLR.R` program, which needs to be in your path.
 
@@ -51,6 +53,7 @@ To run the method. First, please quality filter the reads. The method requires h
 		-1, --forward_file [FILE]		if using paired-reads, the forward reads file
 		-2, --reverse_file [FILE]		if using paired-reads, the reverse reads file
 		-e, --EM-error [decimal]		error rate for EM algorithm
+		-d, --clean-my-reads                    Clean reads with fastq_quality_trimmer [must have FASTQ reads]
 		-c, --coverage [integer]		number of reads needed to calculate allele freq [default: 50]
 		-a, --fasta				reads are in FASTA format [default: FASTQ]
 		-l, --llr				Perform the LLR procedure
