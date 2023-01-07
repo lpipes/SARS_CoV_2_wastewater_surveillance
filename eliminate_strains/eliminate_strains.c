@@ -2445,20 +2445,20 @@ void perform_bowtie_alignment_xeq( Options opt ){
 	if (access("MN908947.3.fasta.1.bt2", F_OK) == 0){
 		printf("Wuhan reference file MN908947.3.fasta.1.bt2 exists. Not rebuilding bowtie2-build database.\n");
 	}else{
-		sprintf(buffer,"bowtie2-build -f MN908947_test.3.fasta MN908947_test.3.fasta");
+		sprintf(buffer,"bowtie2-build -f MN908947.3.fasta MN908947.3.fasta");
 		system(buffer);
 	}
 	if (opt.paired==1 && opt.fasta_format==1){
-		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947_test.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
 		system(buffer);
 	}else if (opt.paired==0 && opt.fasta_format==1){
-		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947_test.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
 		system(buffer);
 	}else if (opt.paired==1 && opt.fasta_format==0){
-		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947_test.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
 		system(buffer);
 	}else if (opt.paired==0 && opt.fasta_format==0){
-		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947_test.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
 		system(buffer);
 	}
 	free(buffer);
