@@ -2246,99 +2246,232 @@ void clean_reads(Options opt){
 	int i;
 	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
-	if ( opt.clean_reads==1 ){
-		printf("You've selected -d to clean your FASTQ reads. If this is not correct, please quit the program and removed the -d option. Cleaning reads...\n");
-		if (opt.paired==0){
-			char *prefix;
-			if ( opt.single_end_file[strlen(opt.single_end_file)-6]=='.' && opt.single_end_file[strlen(opt.single_end_file)-5]=='f' && opt.single_end_file[strlen(opt.single_end_file)-4]=='a' && opt.single_end_file[strlen(opt.single_end_file)-3]=='s' && opt.single_end_file[strlen(opt.single_end_file)-2]=='t' && opt.single_end_file[strlen(opt.single_end_file)-1]=='q' ){
-				prefix = (char*)malloc((strlen(opt.single_end_file)-6+15)*sizeof(char));
-				for(i=0; i<strlen(opt.single_end_file)-6; i++){
-					prefix[i] = opt.single_end_file[i];
-				}
-				for(i=strlen(opt.single_end_file)-6; i<strlen(opt.single_end_file)-6+15; i++){
-					prefix[i] ='\0';
-				}
-			}else if ( opt.single_end_file[strlen(opt.single_end_file)-3]=='.' && opt.single_end_file[strlen(opt.single_end_file)-2]=='f' && opt.single_end_file[strlen(opt.single_end_file)-1]=='q' ){
-				prefix = (char*)malloc((strlen(opt.single_end_file)-3+15)*sizeof(char));
-				for(i=0; i<strlen(opt.single_end_file)-3; i++){
-					prefix[i] = opt.single_end_file[i];
-				}
-				for(i=strlen(opt.single_end_file)-3; i<strlen(opt.single_end_file)-3+15; i++){
-					prefix[i] ='\0';
-				}
-			}else{
-				printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
-				exit(1);
+	if (opt.paired==0){
+		char *prefix;
+		if ( opt.single_end_file[strlen(opt.single_end_file)-6]=='.' && opt.single_end_file[strlen(opt.single_end_file)-5]=='f' && opt.single_end_file[strlen(opt.single_end_file)-4]=='a' && opt.single_end_file[strlen(opt.single_end_file)-3]=='s' && opt.single_end_file[strlen(opt.single_end_file)-2]=='t' && opt.single_end_file[strlen(opt.single_end_file)-1]=='q' ){
+			prefix = (char*)malloc((strlen(opt.single_end_file)-6+15)*sizeof(char));
+			for(i=0; i<strlen(opt.single_end_file)-6; i++){
+				prefix[i] = opt.single_end_file[i];
 			}
-			sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.single_end_file,prefix);
-			system(buffer);
-			trim_ends(prefix);
-			//sprintf(buffer, "fastx_trimmer -m 65 -t 15 -i %s_trimmed1.fastq -o %s_trimmed2.fastq",opt.single_end_file,prefix);
-			//system(buffer);
-			//sprintf(buffer, "fastx_trimmer -f 15 -i %s_trimmed2.fastq -o %s_trimmed3.fastq",opt.single_end_file,prefix);
-			//system(buffer);
-			char suffix[] = "_trimmed2.fastq";
-			strcat(prefix,suffix);
-			strcpy(opt.single_end_file,prefix);
-			free(prefix);
+			for(i=strlen(opt.single_end_file)-6; i<strlen(opt.single_end_file)-6+15; i++){
+				prefix[i] ='\0';
+			}
+		}else if ( opt.single_end_file[strlen(opt.single_end_file)-3]=='.' && opt.single_end_file[strlen(opt.single_end_file)-2]=='f' && opt.single_end_file[strlen(opt.single_end_file)-1]=='q' ){
+			prefix = (char*)malloc((strlen(opt.single_end_file)-3+15)*sizeof(char));
+			for(i=0; i<strlen(opt.single_end_file)-3; i++){
+				prefix[i] = opt.single_end_file[i];
+			}
+			for(i=strlen(opt.single_end_file)-3; i<strlen(opt.single_end_file)-3+15; i++){
+				prefix[i] ='\0';
+			}
 		}else{
-			char *prefix_forward;
-			if ( opt.forward_end_file[strlen(opt.forward_end_file)-6]=='.' && opt.forward_end_file[strlen(opt.forward_end_file)-5]=='f' && opt.forward_end_file[strlen(opt.forward_end_file)-4]=='a' && opt.forward_end_file[strlen(opt.forward_end_file)-3]=='s' && opt.forward_end_file[strlen(opt.forward_end_file)-2]=='t' && opt.forward_end_file[strlen(opt.forward_end_file)-1]=='q' ){
-				prefix_forward = (char*)malloc((strlen(opt.forward_end_file)-6+15)*sizeof(char));
-				for(i=0; i<strlen(opt.forward_end_file)-6; i++){
-					prefix_forward[i] = opt.forward_end_file[i];
-				}
-				for(i=strlen(opt.forward_end_file)-6; i<strlen(opt.forward_end_file)-6+15; i++){
-					prefix_forward[i] = '\0';
-				}
-			}else if ( opt.forward_end_file[strlen(opt.forward_end_file)-3]=='.' && opt.forward_end_file[strlen(opt.forward_end_file)-2]=='f' && opt.forward_end_file[strlen(opt.forward_end_file)-1]=='q' ){
-				prefix_forward = (char*)malloc((strlen(opt.forward_end_file)-3+15)*sizeof(char));
-				for(i=0; i<strlen(opt.forward_end_file)-3; i++){
-					prefix_forward[i] = opt.forward_end_file[i];
-				}
-				for(i=strlen(opt.forward_end_file)-3; i<strlen(opt.forward_end_file)-3+15; i++){
-					prefix_forward[i] = '\0';
-				}
-			}else{
-				printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
-				exit(1);
+			printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
+			exit(1);
+		}
+		sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.single_end_file,prefix);
+		system(buffer);
+		trim_ends(prefix);
+		//sprintf(buffer, "fastx_trimmer -m 65 -t 15 -i %s_trimmed1.fastq -o %s_trimmed2.fastq",opt.single_end_file,prefix);
+		//system(buffer);
+		//sprintf(buffer, "fastx_trimmer -f 15 -i %s_trimmed2.fastq -o %s_trimmed3.fastq",opt.single_end_file,prefix);
+		//system(buffer);
+		char suffix[] = "_trimmed2.fastq";
+		strcat(prefix,suffix);
+		strcpy(opt.single_end_file,prefix);
+		free(prefix);
+	}else{
+		char *prefix_forward;
+		if ( opt.forward_end_file[strlen(opt.forward_end_file)-6]=='.' && opt.forward_end_file[strlen(opt.forward_end_file)-5]=='f' && opt.forward_end_file[strlen(opt.forward_end_file)-4]=='a' && opt.forward_end_file[strlen(opt.forward_end_file)-3]=='s' && opt.forward_end_file[strlen(opt.forward_end_file)-2]=='t' && opt.forward_end_file[strlen(opt.forward_end_file)-1]=='q' ){
+			prefix_forward = (char*)malloc((strlen(opt.forward_end_file)-6+15)*sizeof(char));
+			for(i=0; i<strlen(opt.forward_end_file)-6; i++){
+				prefix_forward[i] = opt.forward_end_file[i];
 			}
-			sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.forward_end_file,prefix_forward);
-			system(buffer);
-			trim_ends(prefix_forward);
-			char suffix[] = "_trimmed2.fastq";
-			strcat(prefix_forward,suffix);
-			strcpy(opt.forward_end_file,prefix_forward);
-			free(prefix_forward);
-			char* prefix_reverse;
-			if ( opt.reverse_end_file[strlen(opt.reverse_end_file)-6]=='.' && opt.reverse_end_file[strlen(opt.reverse_end_file)-5]=='f' && opt.reverse_end_file[strlen(opt.reverse_end_file)-4]=='a' && opt.reverse_end_file[strlen(opt.reverse_end_file)-3]=='s' && opt.reverse_end_file[strlen(opt.reverse_end_file)-2]=='t' && opt.reverse_end_file[strlen(opt.reverse_end_file)-1]=='q' ){
-				prefix_reverse = (char*)malloc((strlen(opt.reverse_end_file)-6+15)*sizeof(char));
-				for(i=0; i<strlen(opt.reverse_end_file)-6; i++){
-					prefix_reverse[i] = opt.reverse_end_file[i];
-				}
-				for(i=strlen(opt.reverse_end_file)-6; i<strlen(opt.reverse_end_file)-6+15; i++){
-					prefix_reverse[i] = '\0';
-				}
-			}else if ( opt.reverse_end_file[strlen(opt.reverse_end_file)-3]=='.' && opt.reverse_end_file[strlen(opt.reverse_end_file)-2]=='f' && opt.reverse_end_file[strlen(opt.reverse_end_file)-1]=='q' ){
-				prefix_reverse = (char*)malloc((strlen(opt.reverse_end_file)-3+15)*sizeof(char));
-				for(i=0; i<strlen(opt.reverse_end_file)-3; i++){
-					prefix_reverse[i] = opt.reverse_end_file[i];
-				}
-				for(i=strlen(opt.reverse_end_file)-3; i<strlen(opt.reverse_end_file)-3+15; i++){
-					prefix_reverse[i] = '\0';
-				}
-			}else{
-				printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
-				exit(1);
+			for(i=strlen(opt.forward_end_file)-6; i<strlen(opt.forward_end_file)-6+15; i++){
+				prefix_forward[i] = '\0';
 			}
-			sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.reverse_end_file,prefix_reverse);
-			system(buffer);
-			trim_ends(prefix_reverse);
-			strcat(prefix_reverse,suffix);
-			strcpy(opt.reverse_end_file,prefix_reverse);
-			free(prefix_reverse);	
+		}else if ( opt.forward_end_file[strlen(opt.forward_end_file)-3]=='.' && opt.forward_end_file[strlen(opt.forward_end_file)-2]=='f' && opt.forward_end_file[strlen(opt.forward_end_file)-1]=='q' ){
+			prefix_forward = (char*)malloc((strlen(opt.forward_end_file)-3+15)*sizeof(char));
+			for(i=0; i<strlen(opt.forward_end_file)-3; i++){
+				prefix_forward[i] = opt.forward_end_file[i];
+			}
+			for(i=strlen(opt.forward_end_file)-3; i<strlen(opt.forward_end_file)-3+15; i++){
+				prefix_forward[i] = '\0';
+			}
+		}else{
+			printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
+			exit(1);
+		}
+		sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.forward_end_file,prefix_forward);
+		system(buffer);
+		trim_ends(prefix_forward);
+		char suffix[] = "_trimmed2.fastq";
+		strcat(prefix_forward,suffix);
+		strcpy(opt.forward_end_file,prefix_forward);
+		free(prefix_forward);
+		char* prefix_reverse;
+		if ( opt.reverse_end_file[strlen(opt.reverse_end_file)-6]=='.' && opt.reverse_end_file[strlen(opt.reverse_end_file)-5]=='f' && opt.reverse_end_file[strlen(opt.reverse_end_file)-4]=='a' && opt.reverse_end_file[strlen(opt.reverse_end_file)-3]=='s' && opt.reverse_end_file[strlen(opt.reverse_end_file)-2]=='t' && opt.reverse_end_file[strlen(opt.reverse_end_file)-1]=='q' ){
+			prefix_reverse = (char*)malloc((strlen(opt.reverse_end_file)-6+15)*sizeof(char));
+			for(i=0; i<strlen(opt.reverse_end_file)-6; i++){
+				prefix_reverse[i] = opt.reverse_end_file[i];
+			}
+			for(i=strlen(opt.reverse_end_file)-6; i<strlen(opt.reverse_end_file)-6+15; i++){
+				prefix_reverse[i] = '\0';
+			}
+		}else if ( opt.reverse_end_file[strlen(opt.reverse_end_file)-3]=='.' && opt.reverse_end_file[strlen(opt.reverse_end_file)-2]=='f' && opt.reverse_end_file[strlen(opt.reverse_end_file)-1]=='q' ){
+			prefix_reverse = (char*)malloc((strlen(opt.reverse_end_file)-3+15)*sizeof(char));
+			for(i=0; i<strlen(opt.reverse_end_file)-3; i++){
+				prefix_reverse[i] = opt.reverse_end_file[i];
+			}
+			for(i=strlen(opt.reverse_end_file)-3; i<strlen(opt.reverse_end_file)-3+15; i++){
+				prefix_reverse[i] = '\0';
+			}
+		}else{
+			printf("Your reads don't end with .fastq or .fq. Please decompress your files if they are gzipped.\n");
+			exit(1);
+		}
+		sprintf(buffer,"fastq_quality_trimmer -v -t 35 -i %s -o %s_trimmed1.fastq -Q33",opt.reverse_end_file,prefix_reverse);
+		system(buffer);
+		trim_ends(prefix_reverse);
+		strcat(prefix_reverse,suffix);
+		strcpy(opt.reverse_end_file,prefix_reverse);
+		free(prefix_reverse);
+	}
+}
+void perform_bowtie_alignment( Options opt ){
+	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
+	memset(buffer,'\0',FASTA_MAXLINE);
+	if (access("MN908947.3.fasta.1.bt2", F_OK) == 0){
+		printf("Wuhan reference file MN908947.3.fasta.1.bt2 exists. Not rebuilding bowtie2-build database.\n");
+	}else{
+		sprintf(buffer,"bowtie2-build -f MN908947.3.fasta MN908947.3.fasta");
+		system(buffer);
+	}
+	if (opt.paired==1 && opt.fasta_format==1){
+		sprintf(buffer,"bowtie2 --all --no-unal -f -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==0 && opt.fasta_format==1){
+		sprintf(buffer,"bowtie2 --all --no-unal -f -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==1 && opt.fasta_format==0){
+		sprintf(buffer,"bowtie2 --all --no-unal -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==0 && opt.fasta_format==0){
+		sprintf(buffer,"bowtie2 --all --no-unal -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		system(buffer);
+	}
+	free(buffer);
+}
+void perform_bowtie_alignment_xeq( Options opt ){
+	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
+	memset(buffer,'\0',FASTA_MAXLINE);
+	if (access("MN908947.3.fasta.1.bt2", F_OK) == 0){
+		printf("Wuhan reference file MN908947.3.fasta.1.bt2 exists. Not rebuilding bowtie2-build database.\n");
+	}else{
+		sprintf(buffer,"bowtie2-build -f MN908947_test.3.fasta MN908947_test.3.fasta");
+		system(buffer);
+	}
+	if (opt.paired==1 && opt.fasta_format==1){
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947_test.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==0 && opt.fasta_format==1){
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -f -x MN908947_test.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==1 && opt.fasta_format==0){
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947_test.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
+		system(buffer);
+	}else if (opt.paired==0 && opt.fasta_format==0){
+		sprintf(buffer,"bowtie2 --all --xeq --no-unal -x MN908947_test.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
+		system(buffer);
+	}
+	free(buffer);
+}
+int calculate_error_rates( char sam_file[] ){
+	FILE* sam_ptr;
+	if (( sam_ptr = fopen(sam_file,"r")) == (FILE *) NULL ) fprintf(stderr, "Sam file could not be opened.\n");
+	int i,j;
+	char buffer [FASTA_MAXLINE];
+	char *s;
+	int cigar[MAX_CIGAR];
+	char cigar_chars[MAX_CIGAR];
+	int mismatches_ends = 0;
+	int mismatches_middle = 0;
+	int total_aligned_reads = 0;
+	int invoke_cleaning = 0;
+	int total_length = 0;
+	for(i=0; i<MAX_CIGAR; i++){
+		cigar[i] = 0;
+		cigar_chars[i] = '\0';
+	}
+	while( fgets(buffer,FASTA_MAXLINE,sam_ptr) != NULL ){
+		if ( buffer[0] != '@' ){
+			total_aligned_reads++;
+			char* buffer_copy = strdup(buffer);
+			int length_of_sam = strlen(buffer);
+			s = strtok(buffer,"\t");
+			for(i=0; i<5; i++){
+				s = strtok(NULL,"\t");
+			}
+			char *cigar_string;
+			cigar_string = strdup(s);
+			char *copy = strdup(cigar_string);
+			char *res = strtok(cigar_string, "=XID");
+			int index = 0;
+			while(res){
+				int from = res - cigar_string + strlen(res);
+				int cigar_count = 0;
+				sscanf(res, "%d", &cigar_count);
+				res = strtok ( NULL, "=XID");
+				int to = res != NULL ? res-cigar_string : strlen(copy);
+				char cigar_char = '\0';
+				sscanf(copy+from, "%c", &cigar_char);
+				cigar[index]=cigar_count;
+				cigar_chars[index]=cigar_char;
+				index++;
+			}
+			free(copy);
+			free(cigar_string);
+			s = strtok(buffer_copy,"\t");
+			for(i=0; i<9; i++){
+				s = strtok(NULL,"\t");
+			}
+			int cigar_char_count=index;
+			int position = 0;
+			char* sequence = s;
+			int length_of_seq = strlen(sequence);
+			total_length = total_length + length_of_seq;
+			for(i=0; i<cigar_char_count; i++){
+				for(j=0; j<cigar[i]; j++){
+					if ( cigar_chars[i] == '=' || cigar_chars[i] == 'X' || cigar_chars[i] == 'I'){
+						position++;
+					}
+					if ( cigar_chars[i] == 'X' && position < 10 ){
+						mismatches_ends++;
+					}else if ( cigar_chars[i] == 'X' && position > length_of_seq - 11 ){
+						mismatches_ends++;
+					}else if ( cigar_chars[i] == 'X' ){
+						mismatches_middle++;
+					}
+				}
+			}
+			free(buffer_copy);
 		}
 	}
+	fclose(sam_ptr);
+	double average_size;
+	average_size = total_length/total_aligned_reads;
+	double error_rate_ends;
+	double error_rate_middle;
+	error_rate_ends = mismatches_ends/total_aligned_reads;
+	error_rate_ends = error_rate_ends/20;
+	error_rate_middle = mismatches_middle/total_aligned_reads;
+	error_rate_middle = error_rate_middle/(average_size-20);
+	printf("Error rate ends: %lf\n",error_rate_ends);
+	printf("Error rate middle: %lf\n",error_rate_middle);
+	if ( error_rate_ends > 3*error_rate_middle ){
+		printf("The error rate in your 5' and 3' ends of your reads is 3x larger than the error rate in the middle of your reads. Your reads need cleaning... quality filtering and trimming ends\n");
+		invoke_cleaning=1;
+	}
+	return invoke_cleaning;
 }
 int main(int argc, char **argv){
 	struct timespec tstart={0,0}, tend={0.0};
@@ -2361,9 +2494,8 @@ int main(int argc, char **argv){
 	memset(opt.print_deletions,'\0',1000);
 	parse_options(argc, argv, &opt);
 	int i,j,k,l;
-	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
-	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.clean_reads==1){
+		printf("You've selected -d to clean your FASTQ reads. If this is not correct, please quit the program and removed the -d option. Cleaning reads...\n");
 		clean_reads(opt);
 	}
 	int problematic_sites[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 76, 78, 150, 153, 285, 320, 538, 553, 558, 635, 660, 663, 759, 856, 1001, 1406, 1707, 1814, 1895, 1947, 2087, 2091, 2094, 2101, 2198, 2247, 2381, 2604, 3050, 3073, 3145, 3191, 3480, 3504, 3564, 3639, 3778, 3877, 4050, 4221, 4463, 4505, 4692, 4854, 4991, 5011, 5130, 5196, 5233, 5257, 5322, 5375, 5393, 5498, 5657, 5736, 5743, 5744, 5765, 5766, 5847, 5880, 6167, 6255, 6309, 6310, 6312, 6483, 6804, 6866, 6869, 6874, 6877, 6971, 6975, 6977, 7017, 7038, 7090, 7118, 7214, 7246, 7305, 7396, 7805, 8022, 8026, 8328, 8459, 8550, 8658, 8678, 8688, 8696, 8790, 8827, 8828, 8835, 8886, 8887, 8943, 8999, 9039, 9141, 9249, 9276, 9471, 10046, 10122, 10129, 10157, 10239, 10266, 10554, 10716, 10764, 10986, 11048, 11074, 11083, 11392, 11535, 12041, 12164, 12413, 12491, 12506, 12685, 12698, 12751, 13117, 13161, 13193, 13239, 13402, 13408, 13476, 13512, 13513, 13514, 13571, 13599, 13650, 13686, 13687, 13693, 14197, 14222, 14223, 14225, 14277, 14488, 14536, 14548, 14553, 14851, 14852, 15075, 15103, 15199, 15230, 15435, 15513, 15521, 15769, 15771, 15922, 16130, 16132, 16188, 16210, 16290, 16537, 16738, 16787, 16887, 16988, 17096, 17178, 17179, 17182, 17479, 17567, 17668, 17675, 17716, 17754, 17848, 18297, 18445, 18465, 18505, 18506, 18690, 18716, 19250, 19286, 19298, 19299, 19338, 19339, 19344, 19369, 19406, 19482, 19484, 19548, 19732, 20056, 20123, 20126, 20128, 20254, 20465, 20857, 21149, 21151, 21209, 21212, 21281, 21302, 21304, 21305, 21379, 21550, 21551, 21575, 21609, 21658, 21968, 21987, 22329, 22335, 22389, 22393, 22410, 22416, 22420, 22488, 22500, 22506, 22515, 22516, 22521, 22651, 22661, 22797, 22802, 22892, 22904, 23016, 23116, 23122, 23144, 23162, 23288, 23291, 23292, 23302, 23343, 23519, 23652, 23738, 23745, 23763, 23766, 23775, 23855, 24389, 24390, 24410, 24497, 24557, 24622, 24673, 24728, 24933, 24942, 25202, 25381, 25382, 25446, 25798, 25902, 25908, 25961, 26549, 26700, 26709, 27033, 27534, 27658, 27660, 27720, 27760, 27761, 27784, 27792, 28004, 28005, 28006, 28008, 28184, 28253, 28517, 28559, 28676, 28780, 28881, 28882, 28883, 28886, 28985, 29037, 29039, 29049, 29058, 29378, 29425, 29427, 29428, 29553, 29594, 29737, 29783, 29786, 29804, 29805, 29806, 29807, 29808, 29809, 29810, 29811, 29812, 29813, 29814, 29815, 29816, 29817, 29818, 29819, 29820, 29821, 29822, 29823, 29824, 29825, 29826, 29827, 29828, 29829, 29830, 29831, 29832, 29833, 29834, 29835, 29836, 29837, 29838, 29839, 29840, 29841, 29842, 29843, 29844, 29845, 29846, 29847, 29848, 29849, 29850, 29851, 29852, 29853, 29854, 29855, 29856, 29857, 29858, 29859, 29860, 29861, 29862, 29863, 29864, 29865, 29866, 29867, 29868, 29869, 29870, 29871, 29872, 29873, 29874, 29875, 29876, 29877, 29878, 29879, 29880, 29881, 29882, 29883, 29884, 29885, 29886, 29887, 29888, 29889, 29890, 29891, 29892, 29893, 29894, 29895, 29896, 29897, 29898, 29899, 29900, 29901, 29902, 29903};
@@ -2373,26 +2505,12 @@ int main(int argc, char **argv){
 		reference_index[i]=0;
 	}
 	align_references(number_of_problematic_sites,problematic_sites,opt.MSA_reference);
-	if (access("MN908947.3.fasta.1.bt2", F_OK) == 0){
-		printf("Wuhan reference file MN908947.3.fasta.1.bt2 exists. Not rebuilding bowtie2-build database.\n");
-	}else{
-		sprintf(buffer,"bowtie2-build -f MN908947.3.fasta MN908947.3.fasta");
-		system(buffer);
+	perform_bowtie_alignment_xeq(opt);
+	int invoke_cleaning = calculate_error_rates(opt.sam);
+	if ( invoke_cleaning == 1 && opt.clean_reads == 0 ){
+		clean_reads(opt);
 	}
-	if (opt.paired==1 && opt.fasta_format==1){
-		sprintf(buffer,"bowtie2 --all --no-unal -f -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
-		system(buffer);
-	}else if (opt.paired==0 && opt.fasta_format==1){
-		sprintf(buffer,"bowtie2 --all --no-unal -f -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
-		system(buffer);
-	}else if (opt.paired==1 && opt.fasta_format==0){
-		sprintf(buffer,"bowtie2 --all --no-unal -x MN908947.3.fasta -1 %s -2 %s -S %s",opt.forward_end_file,opt.reverse_end_file,opt.sam);
-		system(buffer);
-	}else if (opt.paired==0 && opt.fasta_format==0){
-		sprintf(buffer,"bowtie2 --all --no-unal -x MN908947.3.fasta -U %s -S %s",opt.single_end_file,opt.sam);
-		system(buffer);
-	}
-	free(buffer);
+	perform_bowtie_alignment(opt);
 	gzFile MSA_file = Z_NULL;
 	if (( MSA_file = gzopen(opt.fasta,"r")) == Z_NULL ) fprintf(stderr, "File could not be opened.\n");
 	int length_of_MSA=0;
@@ -2650,7 +2768,7 @@ int main(int argc, char **argv){
 		printf("No strains remaining exiting...\n");
 		exit(1);
 	}
-	buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
+	char buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.llr==1){
 		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
