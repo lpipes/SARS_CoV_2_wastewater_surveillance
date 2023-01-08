@@ -321,6 +321,8 @@ tmp <- parSapply(cl, 1:length(p_tmp), function(ii,p,opt,p_tmp,Q,log.likelihood.w
       # LLR[ii] <- 2*(log.likelihood.with-log.likelihood.without)
       return(c(2*(log.likelihood.with-log.likelihood.without),F))
     }
+  }else{
+    return(c(NA,F))
   }
 },p=p,opt=opt,p_tmp=p_tmp,Q=Q,log.likelihood.with=log.likelihood.with)
 stopCluster(cl)
