@@ -2846,7 +2846,7 @@ int main(int argc, char **argv){
 		printf("No strains remaining exiting...\n");
 		exit(1);
 	}
-	char buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
+	char* buffer = (char*)malloc(FASTA_MAXLINE*sizeof(char));
 	memset(buffer,'\0',FASTA_MAXLINE);
 	if (opt.llr==1){
 		sprintf(buffer,"Rscript EM_C_LLR.R -i %s -f %lf -e %lf -l -s -v %s -r %s -b %s",opt.outfile,opt.freq,opt.error,opt.variant,opt.fasta,opt.print_counts);
